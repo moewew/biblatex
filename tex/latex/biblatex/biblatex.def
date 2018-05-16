@@ -2025,15 +2025,22 @@
 
 \fi
 
-\def\blx@clsinterface@defheading#1{%
-  \ifcsundef{abx@clsinterface@heading@#1}
+\def\blx@clsinterface@defbibheading#1{%
+  \ifcsundef{abx@clsinterface@bibheading@#1}
     {}
-    {\ifcsundef{abx@clsinterface@heading@#1@title}
-       {\defbibheading{#1}{\csuse{abx@clsinterface@heading@#1}{##1}}}
-       {\defbibheading{#1}[\csuse{abx@clsinterface@heading@#1@title}]{%
-          \csuse{abx@clsinterface@heading@#1}{##1}}}}}
+    {\ifcsundef{abx@clsinterface@bibheading@#1@title}
+       {\blx@info@noline{Redefining bibheading '#1' according to\MessageBreak
+          \string\abx@clsinterface@bibheading@#1.\MessageBreak
+          No default title provided}%
+        \defbibheading{#1}{\csuse{abx@clsinterface@bibheading@#1}{##1}}}
+       {\blx@info@noline{Redefining bibheading '#1' according to\MessageBreak
+          \string\abx@clsinterface@bibheading@#1.\MessageBreak
+          Default title taken from\MessageBreak
+          \string\abx@clsinterface@bibheading@#1@title}%
+        \defbibheading{#1}[\csuse{abx@clsinterface@bibheading@#1@title}]{%
+          \csuse{abx@clsinterface@bibheading@#1}{##1}}}}}
 
-\forcsvlist{\blx@clsinterface@defheading}{bibliography,biblist,bibintoc,
+\forcsvlist{\blx@clsinterface@defbibheading}{bibliography,biblist,bibintoc,
   biblistintoc,bibnumbered,biblistnumbered,subbibliography,subbibintoc,
   subbibnumbered}
 

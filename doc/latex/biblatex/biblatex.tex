@@ -6114,7 +6114,7 @@ Inside name formats, the nameparts constant declaration makes available two or t
 
 Note these per-namepart uniqueness macros are essentially an override of the \opt{uniquename} value (see \secref{aut:aux:tst}) for the name as a whole. Styles can choose to use either the less granular \opt{uniquename} value or the more detailed per-namepart values. Usually the general \opt{uniquename} value is enough for ordinary Western names but the more granular information per-namepart is provided to allow sophisticated name uniqueness processing for more complex name schemata.
 
-The name formatting directive is executed once for each name in the name list. Here is a simplified example -- the standard name formats are more intricate:
+The name formatting directive is executed once for each name in the name list. Here is a simplified example---the standard name formats are more intricate:
 
 \begin{ltxexample}
 \DeclareNameFormat{author}{%
@@ -12687,22 +12687,28 @@ In order to minimize the risk of name clashes, \latex packages typically prefix 
 
 \end{marglist}
 
-\subsection{Interface for Document Classes}
+\subsection{Interface for Document Classes}\label{aut:clsint}
 Some features of \biblatex\ require interaction with the document class in use. A few of these interactions may be subtle because they involve patching class commands, others are more visible, for example when \biblatex\ typesets the bibliography headings.
 For a long time \biblatex\ has featured extensive support not only for the standard document classes, but also for \acr{KOMA}-Script and \sty{memoir}. Because it is not viable for \biblatex\ to have ready special code for all possible document classes, this section offers a different approach: A standardised interface for document classes.
 
-Currently this interface only manages the appearance of the bibliography headings.
+Currently the interface only manages the appearance of the bibliography headings.
+The advantage of this interface over using \cmd{defbibheading} directly is that \biblatex\ does not need to be loaded to use it. This means that classes do not have to defer these settings to \cmd{AtEndPreamble}---they can just work linearly, \biblatex\ will pick up the definitions when it is loaded. Naturally this implies that the definitions have to be made before \biblatex\ is loaded. For a general-purpose document class this seems like a good approach anyway, since it probably does not load any bibliography packages itself and leaves that decision to the end user.
 
 The heading interface allows document classes to regain control over the bibliography headings.
-Classes that want to make use of the heading interface define the following macros for each of the headings they want to take over listed in the description of \cs{defbibheading} in \secref{use:bib:hdg}.
+Classes that want to make use of the heading interface define the following macros for each of the headings listed in the description of \cmd{defbibheading} in \secref{use:bib:hdg} they want to take over. These macros must be defined before \biblatex\ is loaded.
 \begin{marglist}
 
-\item[\cs{abx@clsinterface@heading@\ensuremath\langle name\ensuremath\rangle}] This macro, which must ultimately take one (mandatory) argument, is used as the \prm{code} argument to \cs{defbibheading}. The argument is the title text of the heading. A class that wants the bibliography heading typeset like a normal chapter could use
+\item[\cmd{abx@clsinterface@bibheading@\ensuremath\langle name\ensuremath\rangle}] This macro, which must ultimately take one (mandatory) argument, is used as the \prm{code} argument to \cmd{defbibheading}. The argument is the title text of the heading.
+A class that wants the standard bibliography heading \opt{bibliography} typeset as a normal section could use
 \begin{ltxexample}
-\newcommand*{\abx@clsinterface@heading@bibliography}[1]{\chapter{#1}}
+\newcommand*{\abx@clsinterface@bibheading@bibliography}[1]{\section{#1}}
 \end{ltxexample}
 
-\item[\cs{abx@clsinterface@heading@\ensuremath\langle name\ensuremath\rangle @title}] This macro is used as the \prm{title} argument to \cs{defbibheading}. Usually this macro should simply expand to \cs{refname} or \cs{bibname}.
+\item[\cmd{abx@clsinterface@bibheading@\ensuremath\langle name\ensuremath\rangle @title}] This macro is used as the optional \prm{title} argument to \cmd{defbibheading}. Usually this macro should simply expand to \cmd{refname}, \cmd{bibname} or \cmd{biblistname}. If this macro is not defined, \cmd{defbibliography} will be executed without the optional \prm{title} argument and defaults to \cmd{bibname}.
+\begin{ltxexample}
+\newcommand*{\abx@clsinterface@bibheading@bibliography@title}{\refname}
+\end{ltxexample}
+Would define the default title of \opt{bibliography} to be \cmd{refname}.
 
 \end{marglist}
 
@@ -13357,6 +13363,7 @@ This revision history is a list of changes relevant to users of this package. Ch
 
 \begin{changelog}
 \begin{release}{3.12}{2018-??-??}
+\item Added an interface for document classes\see{aut:clsint}
 \item Added \bibfield{extraname}\see{aut:bbx:fld:lab}
 \item Added \opt{bibencoding} option to \cmd{addbibresource}\see{use:bib:res}
 \item Changed type of \bibfield{number} from integer to literal \see{bib:fld:dat}

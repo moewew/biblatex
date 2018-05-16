@@ -1,4 +1,15 @@
 # RELEASE NOTES FOR VERSION 3.12
+- Implement a standardised heading interface for document classes.
+  This allows class developers to take over bibliography headings without
+  `\defbibheading`. Since the interface does not require `biblatex` be loaded
+  at the time of using it, this avoids awkward `\AtEndPreamble` and
+  `\@ifpackageloaded{biblatex}` constructions.
+  ```
+  \newcommand*{\abx@clsinterface@bibheading@bibliography}[1]{\section{#1}}
+  \newcommand*{\abx@clsinterface@bibheading@bibliography@title}{\refname}
+  ```
+  Would instruct `biblatex` to typeset the bibliography heading as a section
+  with `\refname` as default title
 - The field `number` is a literal field now and not an integer. This allows for
   a wider range of possible input such as "S1", "Suppl. 1", "1-3".
   If you want to sort by `number` and only have integers in there, you should
