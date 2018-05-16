@@ -8156,7 +8156,9 @@
     {\blx@printbibheading[]}}
 
 \def\blx@printbibheading[#1]{%
-  \def\blx@theheading{bibliography}%
+  \ifcsundef{abx@clsinterface@defaultheading@bibheading}
+    {\def\blx@theheading{bibliography}}
+    {\letcs\blx@theheading{abx@clsinterface@defaultheading@bibheading}}%
   \let\blx@thetitle\@empty
   \blx@safe@actives
   \setkeys{blx@bhd}{#1}%
@@ -8182,7 +8184,9 @@
 \def\blx@printbibliography[#1]{%
   \toggletrue{blx@tempa}%
   \toggletrue{blx@tempb}%
-  \def\blx@theheading{bibliography}%
+  \ifcsundef{abx@clsinterface@defaultheading@bib}
+    {\def\blx@theheading{bibliography}}
+    {\letcs\blx@theheading{abx@clsinterface@defaultheading@bib}}%
   \def\blx@theenv{bibliography}%
   \let\blx@theprenote\@empty
   \let\blx@thepostnote\@empty
@@ -8234,7 +8238,9 @@
     {\blx@bibbysection[]}}
 
 \def\blx@bibbysection[#1]{%
-  \def\blx@theheading{bibliography}%
+  \ifcsundef{abx@clsinterface@defaultheading@bibbysection}
+    {\def\blx@theheading{bibliography}}
+    {\letcs\blx@theheading{abx@clsinterface@defaultheading@bibbysection}}%
   \def\blx@theenv{bibliography}%
   \let\blx@theprenote\@empty
   \let\blx@thepostnote\@empty
@@ -8273,7 +8279,9 @@
     {\blx@bibbysegment[]}}
 
 \def\blx@bibbysegment[#1]{%
-  \def\blx@theheading{bibliography}%
+  \ifcsundef{abx@clsinterface@defaultheading@bibbysegment}
+    {\def\blx@theheading{bibliography}}
+    {\letcs\blx@theheading{abx@clsinterface@defaultheading@bibbysegment}}%
   \def\blx@theenv{bibliography}%
   \let\blx@theprenote\@empty
   \let\blx@thepostnote\@empty
@@ -8317,7 +8325,9 @@
     {\blx@bibbycategory[]}}
 
 \def\blx@bibbycategory[#1]{%
-  \def\blx@theheading{bibliography}%
+  \ifcsundef{abx@clsinterface@defaultheading@bibbycategory}
+    {\def\blx@theheading{bibliography}}
+    {\letcs\blx@theheading{abx@clsinterface@defaultheading@bibbycategory}}%
   \def\blx@theenv{bibliography}%
   \let\blx@theprenote\@empty
   \let\blx@thepostnote\@empty
@@ -8607,7 +8617,9 @@
   \edef\on@line{\on@line}%
   \toggletrue{blx@tempa}%
   \toggletrue{blx@tempb}%
-  \def\blx@theheading{biblist}% default to biblist heading
+  \ifcsundef{abx@clsinterface@defaultheading@biblist}
+    {\def\blx@theheading{biblist}}
+    {\letcs\blx@theheading{abx@clsinterface@defaultheading@biblist}}%
   \def\blx@theenv{#2}% default to list name
   \def\blx@thebiblist{#2}%
   \def\blx@thebiblistdriver{#2}%
