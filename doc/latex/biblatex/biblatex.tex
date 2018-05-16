@@ -12687,6 +12687,25 @@ In order to minimize the risk of name clashes, \latex packages typically prefix 
 
 \end{marglist}
 
+\subsection{Interface for Document Classes}
+Some features of \biblatex\ require interaction with the document class in use. A few of these interactions may be subtle because they involve patching class commands, others are more visible, for example when \biblatex\ typesets the bibliography headings.
+For a long time \biblatex\ has featured extensive support not only for the standard document classes, but also for \acr{KOMA}-Script and \sty{memoir}. Because it is not viable for \biblatex\ to have ready special code for all possible document classes, this section offers a different approach: A standardised interface for document classes.
+
+Currently this interface only manages the appearance of the bibliography headings.
+
+The heading interface allows document classes to regain control over the bibliography headings.
+Classes that want to make use of the heading interface define the following macros for each of the headings they want to take over listed in the description of \cs{defbibheading} in \secref{use:bib:hdg}.
+\begin{marglist}
+
+\item[\cs{abx@clsinterface@heading@\ensuremath\langle name\ensuremath\rangle}] This macro, which must ultimately take one (mandatory) argument, is used as the \prm{code} argument to \cs{defbibheading}. The argument is the title text of the heading. A class that wants the bibliography heading typeset like a normal chapter could use
+\begin{ltxexample}
+\newcommand*{\abx@clsinterface@heading@bibliography}[1]{\chapter{#1}}
+\end{ltxexample}
+
+\item[\cs{abx@clsinterface@heading@\ensuremath\langle name\ensuremath\rangle @title}] This macro is used as the \prm{title} argument to \cs{defbibheading}. Usually this macro should simply expand to \cs{refname} or \cs{bibname}.
+
+\end{marglist}
+
 \appendix
 \section*{Appendix}
 \addcontentsline{toc}{section}{Appendix}

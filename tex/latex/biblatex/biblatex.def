@@ -2025,6 +2025,18 @@
 
 \fi
 
+\def\blx@clsinterface@defheading#1{%
+  \ifcsundef{abx@clsinterface@heading@#1}
+    {}
+    {\ifcsundef{abx@clsinterface@heading@#1@title}
+       {\defbibheading{#1}{\csuse{abx@clsinterface@heading@#1}{##1}}}
+       {\defbibheading{#1}[\csuse{abx@clsinterface@heading@#1@title}]{%
+          \csuse{abx@clsinterface@heading@#1}{##1}}}}}
+
+\forcsvlist{\blx@clsinterface@defheading}{bibliography,biblist,bibintoc,
+  biblistintoc,bibnumbered,biblistnumbered,subbibliography,subbibintoc,
+  subbibnumbered}
+
 % ------------------------------------------------------------------
 % GENERIC CITATION COMMANDS
 % ------------------------------------------------------------------
