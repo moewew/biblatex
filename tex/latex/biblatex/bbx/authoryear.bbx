@@ -46,7 +46,8 @@
            {\printlabeldateextra}}}}%
   \renewbibmacro*{bbx:ifmergeddate}{\iflabeldateisdate}%
   \renewbibmacro*{issue+date}{%
-    \usebibmacro{bbx:ifmergeddate}
+    \ifboolexpr{test {\usebibmacro{bbx:ifmergeddate}}
+                or test {\iffieldundef{year}}}
       {}
       {\printtext[parens]{%
          \printfield{issue}%
@@ -64,7 +65,8 @@
            {\printlabeldateextra}}}}%
   \renewbibmacro*{bbx:ifmergeddate}{\iflabeldateisdate}%
   \renewbibmacro*{issue+date}{%
-    \ifboolexpr{test {\usebibmacro{bbx:ifmergeddate}}
+    \ifboolexpr{(test {\usebibmacro{bbx:ifmergeddate}}
+                 or test {\iffieldundef{year}})
                 and
                 test {\iffieldundef{issue}}}
       {}
@@ -91,7 +93,8 @@
   }%
   \renewbibmacro*{issue+date}{%
     \ifboolexpr{
-      test {\usebibmacro{bbx:ifmergeddate}}
+      (test {\usebibmacro{bbx:ifmergeddate}}
+       or test {\iffieldundef{year}})
       and
       test {\iffieldundef{issue}}
     }
@@ -119,7 +122,8 @@
   }%
   \renewbibmacro*{issue+date}{%
     \ifboolexpr{
-      test {\usebibmacro{bbx:ifmergeddate}}
+      (test {\usebibmacro{bbx:ifmergeddate}}
+       or test {\iffieldundef{year}})
       and
       test {\iffieldundef{issue}}
     }
@@ -138,10 +142,13 @@
       {\printtext[parens]{\printlabeldateextra}}}%
   \renewbibmacro*{bbx:ifmergeddate}{\@secondoftwo}%
   \renewbibmacro*{issue+date}{%
-    \printtext[parens]{%
-      \printfield{issue}%
-      \setunit*{\addspace}%
-      \usebibmacro{date}}%
+    \ifboolexpr{test {\iffieldundef{year}}
+                and test {\iffieldundef{issue}}}
+      {}
+      {\printtext[parens]{%
+         \printfield{issue}%
+         \setunit*{\addspace}%
+         \usebibmacro{date}}}%
     \newunit}}
 
 \ExecuteBibliographyOptions{labeldateparts,sorting=nyt,pagetracker,mergedate}

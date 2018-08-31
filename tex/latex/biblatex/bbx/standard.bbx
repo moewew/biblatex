@@ -783,10 +783,13 @@
   \newunit}
 
 \newbibmacro*{issue+date}{%
-  \printtext[parens]{%
-    \printfield{issue}%
-    \setunit*{\addspace}%
-    \usebibmacro{date}}%
+  \ifboolexpr{test {\iffieldundef{year}}
+              and test {\iffieldundef{issue}}}
+    {}
+    {\printtext[parens]{%
+       \printfield{issue}%
+       \setunit*{\addspace}%
+       \usebibmacro{date}}}%
   \newunit}
 
 \newbibmacro*{event+venue+date}{%
