@@ -34,6 +34,9 @@
   `nametitledelim`.
   For compatibility reasons `\labelnamepunct` still pops up in the code here
   and there, but `nametitledelim` should be preferred now.
+- Add `\DeclareLabelwidthFieldCombination` to set up label widths not only
+  for single label fields, but also for arbitrary combinations of those
+  fields (the calculated value is the maximum over all fields and entries).
 
 # RELEASE NOTES FOR VERSION 3.11
 - `\printbiblist` now supports `driver` and `biblistfilter` options

@@ -11746,6 +11746,13 @@ The length registers and counters discussed here are used by \biblatex to pass i
 
 For every field marked as a <label> field in the data model, a length register is created as per \texttt{shorthandwidth} above. Since \bibfield{shorthand} is so marked in the default data model, this functionality is a superset of that described for \texttt{shorthandwidth}.
 
+\cmditem{DeclareLabelwidthFieldCombination}{labelwidth name}{labelfield list}
+\cmditem*{DeclareLabelwidthFieldCombination*}{labelwidth name}{labelfield list}
+
+Declare a new length \len{\prm{labelwidth name}width} calculated on the basis of all fields given in the \prm{labelfield list}. That length can be used to set up combined lists of label fields.
+The unstarred version appends the \prm{labelfield list} to the current list of fields, the starred version clears the list and replaces it.
+
+
 \lenitem{labelnumberwidth}
 
 This length register indicates the width of the widest \bibfield{labelnumber}. Numeric bibliography styles
@@ -13374,6 +13381,7 @@ This revision history is a list of changes relevant to users of this package. Ch
 \item Added \cmd{DeprecateFieldFormatWithReplacement} and friends\see{aut:bib:fmt}
 \item Added \cs{ifdateyearsequal}\see{aut:aux:tst}
 \item Added Hungarian localisation\see{use:loc:hun}
+\item Added \cmd{DeclareLabelwidthFieldCombination}\see{aut:fmt:ilc}
 \end{release}
 
   \begin{release}{3.11}{2018-02-20}

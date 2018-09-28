@@ -3503,7 +3503,7 @@
                   and not test {\ifdatehastime{#2}})
               or (not test {\ifdatehastime{#1}}
                   and test {\ifdatehastime{#2}})}}
-                  
+
 \def\blx@imc@ifdateyearsequal#1#2{%
   \ifboolexpr{ test {\iffieldsequal{#1year}{#2year}}
                and test {\iffieldsequal{#1dateera}{#2dateera}}}}
@@ -7341,6 +7341,7 @@
   \nottoggle{blx@skipbiblist}
     {\expandafter\ifstrequal\expandafter{\blx@dlist@type}{list}
       {\blx@bbl@labelfields
+       \blx@bbl@labelfieldcombos
         \listcsxadd{blx@dlist@\blx@dlist@type @\the\c@refsection @\blx@dlist@name}{\abx@field@entrykey}}
       {}}%
     {}%
@@ -7488,6 +7489,49 @@
        \blx@setlabwidth{\csname #1##1width\endcsname}{%
          \csuse{abx@flfw@##1width}{\csname abx@field@##1\endcsname}}}}%
   \abx@dolabelfields}
+
+\newcommand*{\blx@labelwidthfieldcombi@namelist}{}
+%{<labelwidth name>}{<field_1,\dots,field_n>}
+\newrobustcmd*{\DeclareLabelwidthFieldCombination}{%
+  \@ifstar
+    {\blx@declarelabelwidthfieldcombination@ii}
+    {\blx@declarelabelwidthfieldcombination@i}}
+
+\def\blx@declarelabelwidthfieldcombination@ii#1#2{%
+  \cslet{blx@labelwidthfieldcombi@fieldlist@#1}\@empty
+  \blx@declarelabelwidthfieldcombination@i{#1}{#2}}
+
+\def\blx@declarelabelwidthfieldcombination@i#1#2{%
+  \ifinlist{#1}{\blx@labelwidthfieldcombi@namelist}
+    {}
+    {\expandafter\newlength\expandafter{\csname #1width\endcsname}%
+     \expandafter\newlength\expandafter{\csname local#1width\endcsname}%
+     \listadd{\blx@labelwidthfieldcombi@namelist}{#1}}%
+  \forcsvlist{\listcsadd{blx@labelwidthfieldcombi@fieldlist@#1}}{#2}}
+
+\def\blx@bbl@locallabelfieldcombos{\blx@bbl@labelfieldcombos@i{local}}
+
+\def\blx@bbl@labelfieldcombos{\blx@bbl@labelfieldcombos@i{}}
+
+%{<local?>}
+\def\blx@bbl@labelfieldcombos@i#1{%
+  \forlistloop
+    {\blx@bbl@labelfieldcombos@ii{#1}}
+    {\blx@labelwidthfieldcombi@namelist}}
+
+%{<local?>}{<labelwidth name>}
+\def\blx@bbl@labelfieldcombos@ii#1#2{%
+  \forlistcsloop
+    {\blx@bbl@labelfieldcombos@iii{#1}{#2}}
+    {blx@labelwidthfieldcombi@fieldlist@#2}}
+
+%{<local?>}{<labelwidth name>}{<field>}
+\def\blx@bbl@labelfieldcombos@iii#1#2#3{%
+  \ifcsundef{abx@field@#3}
+    {}
+    {\abx@flfw@getfieldformat{abx@flfw@#3width}{#3width}{#3}%
+     \blx@setlabwidth{\csname #1#2width\endcsname}{%
+       \csuse{abx@flfw@#3width}{\csname abx@field@#3\endcsname}}}}
 
 \def\blx@bbl@labelnumber{%
   % Used at endentry, when reading .bbl
@@ -8498,7 +8542,8 @@
          {\blx@bbl@locallabelalphawidth}
          {}%
        \nottoggle{blx@skipbiblist}
-         {\blx@bbl@locallabelfields}
+         {\blx@bbl@locallabelfields
+          \blx@bbl@locallabelfieldcombos}
          {}}%
      \endgroup}
     {}}
