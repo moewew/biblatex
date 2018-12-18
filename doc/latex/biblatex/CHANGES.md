@@ -1,3 +1,57 @@
+# RELEASE NOTES FOR VERSION ?.??
+- **CRITICAL CHANGE** `biblatex` now defers length assignments involving
+  `\parindent` to the document body, more specifically the beginning of the
+  bibliography environment. The value of `\parindent` in the preamble is not
+  reliable and may not reflect the actual values in the document.
+  See https://github.com/plk/biblatex/issues/848 for more details.
+  Thanks to TeX.StackExchange user Young Un for bringing up the isse,
+  gusbrs for investigating it, Ulrike Fischer for pointing out the problem
+  and Markus Kohm for the suggested solution.
+
+  To retain backwards compatibility as far as possible and preserve `\bibhang`
+  as a length register, it is set to a sentinel value (`\blx@sentineldim`
+  = `-\maxdimen`) in the document and only set to the actual value in the start
+  code for the bibliography environment.
+  This happens via the new `\DeferSetBibLength` command.
+  That means that `\bibhang` may not be used outside of bibliography
+  environments any more as it will have a nonsenical value.
+  Furthermore, the value could change from bibliography to
+  bibliography if the surrounding `\parindent` value changes.
+  Finally, the output of existing documents might be affected if the value of
+  `\parindent` diverges between the premable and the document body.
+  
+  The old behaviour can be restored with
+  ```
+  \setlength{\bibhang}{\ifnumequal{\parindent}{0}{1em}{\parindent}}
+  ```
+  in the preamble.
+- Add `\DeferSetBibLength{<length>}{<value>}`.
+  As mentioned above, this command defers the assignment of `<value>` to
+  `\length` to the beginning of the bibliography environment.
+  Outside of bibliography environments, `<length>` will have the nonsensical
+  sentinel value `\blx@sentineldim`, hence `<length>` should only be used
+  in bibliography environments.
+  Other than that `<length>` is still a length register that can be set with
+  `\setlength`, but if it is overwritten and the value changes to anything
+  other than `\blx@sentineldim` the deferred assignment will not be performed
+  any more.
+  
+  The starred version `\DeferSetBibLength*{<length>}{<value>}` clears the list
+  of deferred length assignments by performing all assignments now
+  before it adds the new one.
+
+  `\ClearDeferredSetBibLengths` can be used to clear all deferred length
+  assignments by performing them now without adding a new one.
+  The starred version `\ClearDeferredSetBibLengths*` clears all deferred length
+  assignments without perfoming the assignments first. This may leave the
+  lengths initalised to the nonsenical sentinel vallue.
+  
+  `\SetDeferredBibLengths` can be used to perform deferred length assignments.
+  Ideally this command would not be used in the preamble.
+  `biblatex` executes it at the beginning of each bibliography environment
+  defined with `\defbibenvironment`. That call is local to a group so that the
+  definitions do not leak out.
+
 # RELEASE NOTES FOR VERSION 3.12
 - **INCOMPATIBLE CHANGE** The syntax for defining data annotations in the
   BibLaTeXML data source format has changed to accommodate named

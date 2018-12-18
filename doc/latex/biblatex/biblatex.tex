@@ -5072,13 +5072,36 @@ Similar to \cmd{mkbibordinal}, but intended for use with the term <series>.
 \subsubsection{Lengths and Counters}
 \label{use:fmt:len}
 
-The length registers and counters in this section may be changed in the document preamble with \cmd{setlength} and \cmd{setcounter}, respectively.
+The length registers and counters in this section may be changed with \cmd{setlength} and \cmd{setcounter}, respectively.
+Length and counter definitions with \cmd{setlength} and \cmd{setcounter}, respectively, perform a full expansion of the new value on assignment. In some cases it may not be desirable to use the values active in the preamble, instead the values from the document body should be picked up. \cmd{DeferSetBibLength} allows for a way to defer the length assignment to the beginning of the bibliography environment.
 
 \begin{ltxsyntax}
 
+\cmditem{DeferSetBibLength}{length}{value}
+\cmditem*{DeferSetBibLength}*{length}{value}
+
+Defers the assignment of \prm{value} to \prm{length} to the beginning of the bibliography environment. The value of \prm{length} should \emph{not} be used outside of bibliography environments as it will be set to a dummy value that acts as a sentinel value. The starred version clears the list of all deferred assignments by performing all deferred assignments now before it adds a new one. The assignment of the lengths can be triggered manually with \cmd{SetDeferredBibLengths}.
+%
+\begin{ltxexample}
+\DeferSetBibLength{\bibhang}
+  {\ifnumequal{\parindent}{0}{1em}{\parindent}}
+\end{ltxexample}
+%
+
+\cmditem{ClearDeferredSetBibLengths}
+\cmditem*{ClearDeferredSetBibLengths}*
+
+Clears the list of all deferred length assignments. To avoid leaving the cleared lengths with nonsensical sentinel values the unstarred version performs all deferred assignments before clearing the list. The starred version does not perform the assignments and may therefore leave the lengths in a practically useless state. In practice this command will probably not be used very often since a deferred assignment can already be blocked by setting a \prm{length} to a value different from the dummy value.
+
+\cmditem{SetDeferredBibLengths}
+
+This command performs deferred length assignments for all lengths which are currently set to the sentinel value.
+
+This command is automatically executed at the beginning of each bibliography environment defined with \cmd{defbibenvironment}.
+
 \lenitem{bibhang}
 
-The hanging indentation of the bibliography, if applicable. This length is initialized to \cmd{parindent} at load-time. If \cmd{parindent} is zero length for some reason, \cmd{bibhang} will default to \texttt{1em}.
+The hanging indentation of the bibliography, if applicable. This length is initialized with \cmd{DeferSetBibLength} at load-time. The default value is \cmd{parindent}. If \cmd{parindent} is zero, \cmd{bibhang} is set to \texttt{1em} instead.
 
 \lenitem{biblabelsep}
 
@@ -11700,9 +11723,31 @@ Similar to \cmd{mkbibordinal}, but intended for use with the term <series>.
 \subsubsection{User-definable Lengths and Counters}
 \label{aut:fmt:len}
 
-This section corresponds to \secref{use:fmt:len} in the user part of the manual. The length registers and counters discussed here are meant to be altered by users. Bibliography and citation styles should incorporate them where applicable and may also provide a default setting which is different from the package default.
+This section corresponds to \secref{use:fmt:len} in the user part of the manual. The length registers and counters discussed here are meant to be altered by users. Bibliography and citation styles should incorporate them where applicable and may also provide a default setting which is different from the package default. Length and counter definitions with \cmd{setlength} and \cmd{setcounter}, respectively, perform a full expansion of the new value on assignment. In some cases it may not be desirable to use the values active in the preamble, instead the values from the document body should be picked up. \cmd{DeferSetBibLength} allows for a way to defer the length assignment to the beginning of the bibliography environment.
 
 \begin{ltxsyntax}
+
+\cmditem{DeferSetBibLength}{length}{value}
+\cmditem*{DeferSetBibLength}*{length}{value}
+
+Defers the assignment of \prm{value} to \prm{length} to the beginning of the bibliography environment. The value of \prm{length} should \emph{not} be used outside of bibliography environments as it will be set to a dummy value that acts as a sentinel value. The starred version clears the list of all deferred assignments by performing all deferred assignments now before it adds a new one. The assignment of the lengths can be triggered manually with \cmd{SetDeferredBibLengths}.
+%
+\begin{ltxexample}
+\DeferSetBibLength{\bibhang}
+  {\ifnumequal{\parindent}{0}{1em}{\parindent}}
+\end{ltxexample}
+%
+
+\cmditem{ClearDeferredSetBibLengths}
+\cmditem*{ClearDeferredSetBibLengths}*
+
+Clears the list of all deferred length assignments. To avoid leaving the cleared lengths with nonsensical sentinel values the unstarred version performs all deferred assignments before clearing the list. The starred version does not perform the assignments and may therefore leave the lengths in a practically useless state. In practice this command will probably not be used very often since a deferred assignment can already be blocked by setting a \prm{length} to a value different from the dummy value.
+
+\cmditem{SetDeferredBibLengths}
+
+This command performs deferred length assignments for all lengths which are currently set to the sentinel value.
+
+This command is automatically executed at the beginning of each bibliography environment defined with \cmd{defbibenvironment}.
 
 \lenitem{bibhang}
 
@@ -13545,6 +13590,10 @@ use$<$name$>$	&\+&\+&\_&\+&\+&\_&\_\\
 This revision history is a list of changes relevant to users of this package. Changes of a more technical nature which do not affect the user interface or the behavior of the package are not included in the list. More technical details are to be found in the \file{CHANGES.md} file. The numbers on the right indicate the relevant section of this manual.
 
 \begin{changelog}
+\begin{release}{?.??}{????-??-??}
+\item Added deferred length assignments with \cmd{DeferSetBibLength}\see{use:fmt:len}
+\end{release}
+
 \begin{release}{3.12}{2018-10-30}
 \item Added literal and named annotation functionality\see{use:annote}
 \item Added \cmd{ifnocite}\see{aut:aux:tst}

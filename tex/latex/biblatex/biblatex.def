@@ -286,8 +286,10 @@
 % Some length registers which may be used to fine-tune the
 % (high-level) layout of the bibliography.
 
-% Default \bibhang to 1em if \parindent is 0 for some reason
-\setlength{\bibhang}{\ifnumequal{\parindent}{0}{1em}{\parindent}}
+% Default \bibhang to 1em if \parindent is 0 for some reason.
+% But \parindent should not be used in the preamble,
+% so we defer the setlength assignment to the beginning of the bibenvironment.
+\DeferSetBibLength{\bibhang}{\ifnumequal{\parindent}{0}{1em}{\parindent}}
 \setlength{\biblabelsep}{2\labelsep}
 \setlength{\bibitemsep}{\itemsep}
 \setlength{\bibnamesep}{0pt}
