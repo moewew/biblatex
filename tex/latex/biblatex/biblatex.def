@@ -290,8 +290,8 @@
 % But \parindent should not be used in the preamble,
 % so we defer the setlength assignment to the beginning of the bibenvironment.
 \DeferSetBibLength{\bibhang}{\ifnumequal{\parindent}{0}{1em}{\parindent}}
-\setlength{\biblabelsep}{2\labelsep}
-\setlength{\bibitemsep}{\itemsep}
+\DeferSetBibLength{\biblabelsep}{2\labelsep}
+\DeferSetBibLength{\bibitemsep}{\itemsep}
 \setlength{\bibnamesep}{0pt}
 \setlength{\bibinitsep}{0pt}
 \setlength{\bibparsep}{0pt}

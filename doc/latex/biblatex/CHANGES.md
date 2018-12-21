@@ -1,20 +1,22 @@
 # RELEASE NOTES FOR VERSION ?.??
 - **CRITICAL CHANGE** `biblatex` now defers length assignments involving
-  `\parindent` to the document body, more specifically the beginning of the
-  bibliography environment. The value of `\parindent` in the preamble is not
+  `\parindent` and other font-dependent lengths to the document body,
+  more specifically the beginning of the bibliography environment.
+  The value of `\parindent` in the preamble is not
   reliable and may not reflect the actual values in the document.
+  This affects the lengths `\bibhang`, `\biblabelsep` and `\bibitemsep`.
   See https://github.com/plk/biblatex/issues/848 for more details.
   Thanks to TeX.StackExchange user Young Un for bringing up the isse,
   gusbrs for investigating it, Ulrike Fischer for pointing out the problem
   and Markus Kohm for the suggested solution.
 
-  To retain backwards compatibility as far as possible and preserve `\bibhang`
-  as a length register, it is set to a sentinel value (`\blx@sentineldim`
+  To retain backwards compatibility as far as possible and preserve the lengths
+  as a length register, they are set to a sentinel value (`\blx@sentineldim`
   = `-\maxdimen`) in the document and only set to the actual value in the start
   code for the bibliography environment.
   This happens via the new `\DeferSetBibLength` command.
-  That means that `\bibhang` may not be used outside of bibliography
-  environments any more as it will have a nonsenical value.
+  That means that the lengths may not be used outside of bibliography
+  environments any more as they will have a nonsenical value.
   Furthermore, the value could change from bibliography to
   bibliography if the surrounding `\parindent` value changes.
   Finally, the output of existing documents might be affected if the value of
@@ -23,6 +25,8 @@
   The old behaviour can be restored with
   ```
   \setlength{\bibhang}{\ifnumequal{\parindent}{0}{1em}{\parindent}}
+  \setlength{\biblabelsep}{2\labelsep}
+  \setlength{\bibitemsep}{\itemsep}
   ```
   in the preamble.
 - Add `\DeferSetBibLength{<length>}{<value>}`.

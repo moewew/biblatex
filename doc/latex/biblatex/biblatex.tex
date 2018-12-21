@@ -5105,11 +5105,11 @@ The hanging indentation of the bibliography, if applicable. This length is initi
 
 \lenitem{biblabelsep}
 
-The horizontal space between entries and their corresponding labels in the bibliography. This only applies to bibliography styles which print labels, such as the \texttt{numeric} and \texttt{alphabetic} styles. This length is initialized to twice the value of \cmd{labelsep} at load-time.
+The horizontal space between entries and their corresponding labels in the bibliography. This only applies to bibliography styles which print labels, such as the \texttt{numeric} and \texttt{alphabetic} styles. This length is initialized to twice the value of \cmd{labelsep} with \cmd{DeferSetBibLength} at load-time.
 
 \lenitem{bibitemsep}
 
-The vertical space between the individual entries in the bibliography. This length is initialized to \cmd{itemsep} at load-time. Note that \len{bibitemsep}, \len{bibnamesep}, and \len{bibinitsep} obey the rules for \cmd{addvspace}, that is, when vertical space introduced by any of these commands immediately follows on from space introduced by another of them, the resulting total space is equal to the largest of them.
+The vertical space between the individual entries in the bibliography. This length is initialized to \cmd{itemsep} with \cmd{DeferSetBibLength} at load-time. Note that \len{bibitemsep}, \len{bibnamesep}, and \len{bibinitsep} obey the rules for \cmd{addvspace}, that is, when vertical space introduced by any of these commands immediately follows on from space introduced by another of them, the resulting total space is equal to the largest of them.
 
 \lenitem{bibnamesep}
 
