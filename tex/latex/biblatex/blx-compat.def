@@ -351,4 +351,18 @@
     Please use '\string\mkdaterangeisoextra'}%
   \mkdaterangeisoextra}
 
+\protected\def\blx@imc@datecircaprintedtf{%
+  \blx@warning@noline{%
+    '\string\datecircaprintedtf' is deprecated.
+    Please use '\string\datecircaprintiso'}%
+  \blx@imc@datecircaprintiso}
+
+\protected\def\blx@imc@enddatecircaprintedtf{%
+  \blx@warning@noline{%
+    '\string\enddatecircaprintedtf' is deprecated.
+    Please use '\string\enddatecircaprintiso'}%
+  \blx@imc@enddatecircaprintiso}
+
+\blx@regimcs{\datecircaprintedtf \enddatecircaprintedtf}
+
 \endinput

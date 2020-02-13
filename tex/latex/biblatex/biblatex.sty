@@ -598,15 +598,16 @@
     {\blx@revstr@l#2\blx@revstr@b@i#1#3\blx@revstr@b@ii}}
 
 % these tests are inspired by Stephan v. Bechtolsheim's TUGboat article
+% 'A Tutorial on \expandafter', TUGBoat 9.1 (1988), pp. 57-61
 % https://www.tug.org/TUGboat/tb09-1/tb20bechtolsheim.pdf
-% but we need to test for start and end and not for generic substring
-% start is easy, delimited arguments help there
+% but we need to test for start and end and not for generic substring.
+% Start is easy, delimited arguments help there.
 \protected\def\blx@ifstrstartswith#1#2{%
   \def\blx@ifstrstartswith@i ##1#2##2&{%
     \ifblank{##1}}%
   \blx@ifstrstartswith@i #1#2&}
 
-% end is harder, so we reverse everything and apply the start test
+% End is harder, so we reverse everything and apply the start test.
 \protected\def\blx@ifstrendswith#1#2{%
   \begingroup
   \edef\blx@tempa{\endgroup
@@ -927,6 +928,9 @@
          \global\cslet{abx@legacywarning@name@#1}\@empty}}}}
 
 %% Initialisation
+\def\blx@blxreinit{%
+  \let\blx@blxreinit\relax}
+
 \def\blx@blxinit{%
   \let\blx@blxinit\relax
   \blx@initunit}
@@ -954,10 +958,31 @@
     {}}
 
 %% Auxiliary commands
-\protected\def\blx@regimc#1{%
-  \xappto\blx@blxinit{%
-    \let\noexpand#1\expandafter\noexpand\csname
-    blx@imc@\expandafter\@gobble\string#1\endcsname}}
+
+% biblatex defines many macros internally as \blx@imc@<macroname>
+% and only exposes them as \<macroname> in a biblatex context
+% via \blx@blxinit.
+% Those macros are defined as \blx@imc@<macroname> and declared
+% to biblatex in \regimcs{\<macroname>}.
+% Essentially that does \let\<macroname>\blx@imc@<macroname>,
+% so changes to \blx@imc@<macroname> after this initialisation
+% are *not* reflected in \<macroname>.
+% If \blx@imc@<macroname> is modified later on while \blx@blxinit
+% is already active (for example in options) re-initialisation
+% can be requested with \reregimc{\<macroname>}.
+% Note that this requires that \blx@blxreinit be called after the
+% modification. Currently this happens after per-type and per-entry
+% options.
+
+\protected\def\blx@reorregimc#1#2{%
+  \eappto#1{%
+    \let\noexpand#2\expandafter\noexpand\csname
+    blx@imc@\expandafter\@gobble\string#2\endcsname}}
+
+\def\blx@regimc{%
+  \blx@reorregimc{\blx@blxinit}}
+\def\blx@reregimc{%
+  \blx@reorregimc{\blx@blxreinit}}
 
 \protected\def\blx@regimcs#1{\blx@regimcs@i#1&}
 \def\blx@regimcs@i#1{%
@@ -965,6 +990,14 @@
     \blx@regimc#1%
     \expandafter\blx@regimcs@i
   \fi}
+
+\protected\def\blx@reregimcs#1{\blx@reregimcs@i#1&}
+\def\blx@reregimcs@i#1{%
+  \ifx#1&\else
+    \blx@reregimc#1%
+    \expandafter\blx@reregimcs@i
+  \fi}
+
 
 % {<field>} => \do{<item1>}\do{<item2>}...
 \def\blx@imc@docsvfield#1{%
@@ -5691,7 +5724,7 @@
 \newrobustcmd*{\mkdaterangecompextra}{%
   \mkdaterangetruncextra{long}}
 
-% calls to \blx@metadateinfo should be grouped to avoid name clashes
+% calls to \blx@metadateinfo must be grouped to avoid name clashes
 \def\blx@metadateinfo#1{%
   \letcs\ifdateera{if#1dateera}%
   \letcs\ifenddateera{if#1enddateera}%
@@ -6342,9 +6375,11 @@
        {#1}}
     {#1}}%
 
+% controlled by datezeros
 \let\blx@imc@mkyearzeros\blx@imc@forcezerosy
 \let\blx@imc@mkmonthzeros\blx@imc@forcezerosmdt
 \let\blx@imc@mkdayzeros\blx@imc@forcezerosmdt
+
 \protected\def\blx@imc@stripzeros#1{%
   \begingroup
   \setbox\@tempboxa=\hbox\bgroup
@@ -6848,28 +6883,24 @@
        {Date fields in the datamodel must end in the string 'date' but '#1' doesn't}}}
 \abx@dodates
 
-% date meta-information option fallbacks
-\def\do#1{%
-  \cslet{#1datecircaprint}\@empty
-  \cslet{#1enddatecircaprint}\@empty
-  \cslet{#1datecircaprintiso}\@empty
-  \cslet{#1enddatecircaprintiso}\@empty
-  \cslet{#1dateuncertainprint}\@empty
-  \cslet{#1enddateuncertainprint}\@empty
-  \cslet{#1dateeraprint}\@gobble
-  \cslet{#1dateeraprintpre}\@gobble
-  \csdef{if#1dateera}##1{\@secondoftwo}%
-  \csdef{if#1enddateera}##1{\@secondoftwo}%
-  \cslet{if#1datecirca}\@secondoftwo
-  \cslet{if#1enddatecirca}\@secondoftwo
-  \cslet{if#1datejulian}\@secondoftwo
-  \cslet{if#1enddatejulian}\@secondoftwo
-  \cslet{if#1dateuncertain}\@secondoftwo
-  \cslet{if#1enddateuncertain}\@secondoftwo
-  \cslet{if#1dateunknown}\@secondoftwo
-  \cslet{if#1enddateunknown}\@secondoftwo}
-\abx@dodatetypes
-\do{labeldate}
+% date circa
+\let\blx@imc@datecircaprint\@empty
+\let\blx@imc@enddatecircaprint\@empty
+\let\blx@imc@datecircaprintiso\@empty
+\let\blx@imc@enddatecircaprintiso\@empty
+
+% date uncertain
+\let\blx@imc@dateuncertainprint\@empty
+\let\blx@imc@enddateuncertainprint\@empty
+
+% date era
+\let\blx@imc@dateeraprint\@gobble
+\let\blx@imc@dateeraprintpre\@gobble
+
+\blx@regimcs{\datecircaprint \enddatecircaprint
+  \datecircaprintiso \enddatecircaprintiso
+  \dateuncertainprint \enddateuncertainprint
+  \dateeraprint \dateeraprintpre}
 
 % These are internal fields/booleans which are not part of the data model but
 % which need to be dealt with along with data model fields in places
@@ -6958,17 +6989,11 @@
   \dolistloop\blx@datemetabooleans}
 
 % Date datatype fields
-\def\do#1{%
-  \protected\csdef{blx@imc@print#1date}{}%
-  \protected\csdef{blx@imc@print#1dateextra}{}%
-  \protected\csdef{blx@imc@print#1time}{}}
-\abx@dodatetypes
-
 % \blx@regimcs doesn't work in do-lists nicely so use internal macro it calls
 \def\do#1{%
-  \xappto\blx@blxinit{\csletcs{print#1date}{blx@imc@print#1date}}%
-  \xappto\blx@blxinit{\csletcs{print#1time}{blx@imc@print#1time}}%
-  \xappto\blx@blxinit{\csletcs{print#1dateextra}{blx@imc@print#1dateextra}}}
+  \appto\blx@blxinit{\csletcs{print#1date}{blx@imc@print#1date}}%
+  \appto\blx@blxinit{\csletcs{print#1time}{blx@imc@print#1time}}%
+  \appto\blx@blxinit{\csletcs{print#1dateextra}{blx@imc@print#1dateextra}}}
 \abx@dodatetypes
 
 % Set up circa, julian and uncertain date internals
@@ -7015,113 +7040,78 @@
 % This can't be neater by testing for the \abx@field@labeldatesource value
 % earlier because its not available until the tests are in scope.
 \appto\blx@blxinit{%
-   \ifdefstring\blx@dateera{astronomical}
-     {\protected\def\dateeraprintpre#1{%
-        \iffieldnum{#1}
-          {\begingroup
-           \let\blx@tempa\@empty
-           \blx@ifstrendswith{#1}{endyear}
-             {\blx@stripfromendinto{#1}{endyear}\blx@datetype
-              \def\blx@tempa{end}}
-             {\blx@stripfromendinto{#1}{year}\blx@datetype}%
-           \csuse{if\blx@datetype\blx@tempa dateera}{bce}
-             {\ifnumless{0-\thefield{#1}}{0}
-               {\printtext{\csuse{bibdateera\blx@tempa prefix}}}
-               {}}
-             {}%
-           \endgroup}
-          {}}}
-     {\protected\def\dateeraprint#1{%
-        \iffieldnum{#1}
-          {\begingroup
-           \let\blx@tempa\@empty
-           \blx@ifstrendswith{#1}{endyear}
-             {\blx@stripfromendinto{#1}{endyear}\blx@datetype
-              \def\blx@tempa{end}}
-             {\blx@stripfromendinto{#1}{year}\blx@datetype}%
-           \csuse{if\blx@datetype\blx@tempa dateera}{bce}
-             {\ifnum\numexpr0-\thefield{#1}\relax<\blx@dateeraauto
-                % \midsentence is to suppress automatic capitalisation
-                \printtext{\printdelim{dateeradelim}\midsentence\bibstring{\blx@dateera@bce}}\relax
-              \fi}
-             {\ifnumless{\thefield{#1}}\blx@dateeraauto
-               {\printtext{\printdelim{dateeradelim}\midsentence\bibstring{\blx@dateera@ce}}}
-               {}}%
-           \endgroup}
-          {}}}%
-  \iftoggle{blx@labeldateparts}
-    {\def\iflabeldateera#1{% start era
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\ifcsstring{abx@field@\abx@field@labeldatesource dateera}{#1}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabeldateera#1{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\ifcsstring{abx@field@\abx@field@labeldatesource dateera}{#1}}}
-         {\@secondoftwo}}}%
-     % end era
-     \def\iflabelenddateera#1{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\ifcsstring{abx@field@\abx@field@labeldatesource enddateera}{#1}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabelenddateera#1{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\ifcsstring{abx@field@\abx@field@labeldatesource enddateera}{#1}}}
-         {\@secondoftwo}}}%
-     % start circa
-     \def\iflabeldatecirca{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\iftoggle{abx@bool@\abx@field@labeldatesource datecirca}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabeldatecirca{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource datecirca}}}
-         {\@secondoftwo}}}%
-     % end circa
-     \def\iflabelenddatecirca{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\iftoggle{abx@bool@\abx@field@labeldatesource enddatecirca}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabelenddatecirca{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource enddatecirca}}}
-         {\@secondoftwo}}}%
-     % start julian
-     \def\iflabeldatejulian{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\iftoggle{abx@bool@\abx@field@labeldatesource datejulian}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabeldatejulian{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource datejulian}}}
-         {\@secondoftwo}}}%
-     % end julian
-     \def\iflabelenddatejulian{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\iftoggle{abx@bool@\abx@field@labeldatesource enddatejulian}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabelenddatejulian{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource enddatejulian}}}
-         {\@secondoftwo}}}%
-     % start uncertain
-     \def\iflabeldateuncertain{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\iftoggle{abx@bool@\abx@field@labeldatesource dateuncertain}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabeldateuncertain{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource dateuncertain}}}
-         {\@secondoftwo}}}%
-     % end uncertain
-     \def\iflabelenddateuncertain{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\iftoggle{abx@bool@\abx@field@labeldatesource enddateuncertain}}
-         {\@secondoftwo}}%
-     \appto\blx@TE@hook{\def\iflabelenddateuncertain{%
-       \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
-         {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource enddateuncertain}}}
-         {\@secondoftwo}}}}%
-  {}}
+  \def\iflabeldateera#1{% start era
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\ifcsstring{abx@field@\abx@field@labeldatesource dateera}{#1}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabeldateera#1{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\ifcsstring{abx@field@\abx@field@labeldatesource dateera}{#1}}}
+      {\@secondoftwo}}}%
+  % end era
+  \def\iflabelenddateera#1{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\ifcsstring{abx@field@\abx@field@labeldatesource enddateera}{#1}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabelenddateera#1{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\ifcsstring{abx@field@\abx@field@labeldatesource enddateera}{#1}}}
+      {\@secondoftwo}}}%
+  % start circa
+  \def\iflabeldatecirca{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\iftoggle{abx@bool@\abx@field@labeldatesource datecirca}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabeldatecirca{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource datecirca}}}
+      {\@secondoftwo}}}%
+  % end circa
+  \def\iflabelenddatecirca{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\iftoggle{abx@bool@\abx@field@labeldatesource enddatecirca}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabelenddatecirca{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource enddatecirca}}}
+      {\@secondoftwo}}}%
+  % start julian
+  \def\iflabeldatejulian{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\iftoggle{abx@bool@\abx@field@labeldatesource datejulian}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabeldatejulian{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource datejulian}}}
+      {\@secondoftwo}}}%
+  % end julian
+  \def\iflabelenddatejulian{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\iftoggle{abx@bool@\abx@field@labeldatesource enddatejulian}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabelenddatejulian{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource enddatejulian}}}
+      {\@secondoftwo}}}%
+  % start uncertain
+  \def\iflabeldateuncertain{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\iftoggle{abx@bool@\abx@field@labeldatesource dateuncertain}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabeldateuncertain{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource dateuncertain}}}
+      {\@secondoftwo}}}%
+  % end uncertain
+  \def\iflabelenddateuncertain{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\iftoggle{abx@bool@\abx@field@labeldatesource enddateuncertain}}
+      {\@secondoftwo}}%
+  \appto\blx@TE@hook{\def\iflabelenddateuncertain{%
+    \xifinlist{\abx@field@labeldatesource date}\blx@datamodel@dates
+      {\blx@TE{\iftoggle{abx@bool@\abx@field@labeldatesource enddateuncertain}}}
+      {\@secondoftwo}}}%
+  }
 
 % Name toggles like \ifauthor etc. need to be dynamically created for all
 % name datatypes in the data model and we have to do this here after the
@@ -7932,18 +7922,19 @@
   \def\do##1{%
     \ifdefstring\blx@dateera{astronomical}
       {}
-      {\ifcsdef{abx@field@##1year}
+      {\ifcsdef{abx@field@##1year@real}
         {\csuse{if##1dateera}{bce}
-          {\csedef{abx@field@##1year}{\number\numexpr\csuse{abx@field@##1year}+1}}
+          {\csedef{abx@field@##1year}{\number\numexpr\csuse{abx@field@##1year@real}+1}}
           {}}
         {}%
-       \ifcsdef{abx@field@##1endyear}
+       \ifcsdef{abx@field@##1endyear@real}
          {\csuse{if##1enddateera}{bce}
-           {\csedef{abx@field@##1endyear}{\number\numexpr\csuse{abx@field@##1endyear}+1}}
+           {\csedef{abx@field@##1endyear}{\number\numexpr\csuse{abx@field@##1endyear@real}+1}}
            {}}
          {}}%
       {}}%
-  \abx@dodatetypes}
+  \abx@dodatetypes
+  \do{label}}
 
 \def\blx@getlabeldata{%
   % Here we resolve label* bib fields to their real fields. In fact, currently biber resolves
@@ -8012,6 +8003,13 @@
           {}%
         \ifcsdef{abx@field@\abx@field@labeldatesource endyear}
           {\edef\abx@field@labelendyear{\csuse{abx@field@\abx@field@labeldatesource endyear}}}
+          {}%
+        % labelyear@real/labelendyear@real
+        \ifcsdef{abx@field@\abx@field@labeldatesource year@real}
+          {\edef\abx@field@labelyear@real{\csuse{abx@field@\abx@field@labeldatesource year@real}}}
+          {}%
+        \ifcsdef{abx@field@\abx@field@labeldatesource endyear@real}
+          {\edef\abx@field@labelendyear@real{\csuse{abx@field@\abx@field@labeldatesource endyear@real}}}
           {}%
         % labelmonth
         \ifcsdef{abx@field@\abx@field@labeldatesource month}
@@ -8142,14 +8140,16 @@
      \edef\blx@tempa{\endgroup
        \noexpand\setkeys{blx@opt@ent}{\abx@field@options}}%
      \blx@tempa
-     \blx@checkoptions@entry}}
+     \blx@checkoptions@entry
+     \blx@blxreinit}}
 
 \def\blx@setoptions@type#1{%
   \ifcsdef{blx@opts@type@#1}
     {\begingroup
      \edef\blx@tempa{\endgroup
        \noexpand\setkeys{blx@opt@typ}{\csuse{blx@opts@type@#1}}}%
-     \blx@tempa}
+     \blx@tempa
+     \blx@blxreinit}
     {}}
 
 \def\blx@checkoptions@global{}
@@ -8269,6 +8269,7 @@
        {}%
      \blx@bbl@labelname}
     {}%
+  \blx@bbl@saverealyears
   \blx@bbl@titles
   \blx@bbl@hooks
   \endgroup}
@@ -8461,6 +8462,18 @@
     {\ifnum\abx@field@extraname>\c@maxextraname
        \global\c@maxextraname\abx@field@extraname\relax
      \fi}}
+
+\def\blx@bbl@saverealyears{%
+  \def\do##1{%
+    \ifcsdef{abx@field@##1year}
+      {\csgappto\blx@bbl@data{%
+         \csletcs{abx@field@##1year@real}{abx@field@##1year}}}
+      {}%
+    \ifcsdef{abx@field@##1endyear}
+      {\csgappto\blx@bbl@data{%
+         \csletcs{abx@field@##1endyear@real}{abx@field@##1endyear}}}
+      {}}%
+  \abx@dodatetypes}
 
 \def\blx@bbl@labeldate{%
   \ifundef\abx@field@extradate
@@ -10171,7 +10184,7 @@
 %% that we can use for that purpose as well.
 %% This is fairly new, so we need to have a fallback for older versions.
 
-%% The standard classes are tricky. 
+%% The standard classes are tricky.
 %% We insert something in \@startsection to get the level number
 %% and then patch \@sect and \@ssect so the label attaches to the
 %% right thing.
@@ -14569,6 +14582,11 @@
   \let\abx@aux@count\@gobbletwo
   \let\abx@aux@fncount\@gobbletwo}
 
+
+% citetracker redefines \ifciteseen and \ifentryseen
+\def\blx@opt@aux@citetracker{%
+  \blx@reregimcs{\ifciteseen \ifentryseen}}
+
 \DeclareBiblatexOption{global,type,entry}[string]{citetracker}[true]{%
   \ifcsdef{blx@opt@citetracker@#1}
     {\csuse{blx@opt@citetracker@#1}}
@@ -14577,28 +14595,38 @@
   \let\blx@imc@ifciteseen\blx@ifciteseen@global
   \let\blx@imc@ifentryseen\blx@ifentryseen@global
   \let\blx@citetracker\blx@citetracker@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@citetracker}
 \def\blx@opt@citetracker@false{%
   \let\blx@imc@ifciteseen\@secondoftwo
   \protected\long\def\blx@imc@ifentryseen##1##2##3{##3}%
-  \let\blx@citetracker\relax}
+  \let\blx@citetracker\relax
+  \blx@opt@aux@citetracker}
 \def\blx@opt@citetracker@context{%
   \let\blx@imc@ifciteseen\blx@ifciteseen@context
   \let\blx@imc@ifentryseen\blx@ifentryseen@context
   \let\blx@citetracker\blx@citetracker@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@citetracker}
 \def\blx@opt@citetracker@strict{%
   \let\blx@imc@ifciteseen\blx@ifciteseen@global
   \let\blx@imc@ifentryseen\blx@ifentryseen@global
   \def\blx@citetracker{%
     \blx@ifcitesingle{\blx@citetracker@global}{}}%
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@citetracker}
 \def\blx@opt@citetracker@constrict{%
   \let\blx@imc@ifciteseen\blx@ifciteseen@context
   \let\blx@imc@ifentryseen\blx@ifentryseen@context
   \def\blx@citetracker{%
     \blx@ifcitesingle{\blx@citetracker@context}{}}%
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@citetracker}
+
+
+% ibidtracker redefines \ifciteibid
+\def\blx@opt@aux@ibidtracker{%
+  \blx@reregimcs{\ifciteibid}}
 
 \DeclareBiblatexOption{global,type,entry}[string]{ibidtracker}[true]{%
   \ifcsdef{blx@opt@ibidtracker@#1}
@@ -14608,26 +14636,36 @@
   \let\blx@imc@ifciteibid\blx@ifciteibid@global
   \let\blx@ibidtracker\blx@ibidtracker@global
   \let\blx@ibidreset\blx@ibidreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@ibidtracker}
 \def\blx@opt@ibidtracker@false{%
   \let\blx@imc@ifciteibid\@secondoftwo
   \let\blx@ibidtracker\relax
-  \let\blx@ibidreset\relax}
+  \let\blx@ibidreset\relax
+  \blx@opt@aux@ibidtracker}
 \def\blx@opt@ibidtracker@context{%
   \let\blx@imc@ifciteibid\blx@ifciteibid@context
   \let\blx@ibidtracker\blx@ibidtracker@context
   \let\blx@ibidreset\blx@ibidreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@ibidtracker}
 \def\blx@opt@ibidtracker@strict{%
   \let\blx@imc@ifciteibid\blx@ifciteibid@strict
   \let\blx@ibidtracker\blx@ibidtracker@strict
   \let\blx@ibidreset\blx@ibidreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@ibidtracker}
 \def\blx@opt@ibidtracker@constrict{%
   \let\blx@imc@ifciteibid\blx@ifciteibid@constrict
   \let\blx@ibidtracker\blx@ibidtracker@constrict
   \let\blx@ibidreset\blx@ibidreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@ibidtracker}
+
+
+% idemtracker redefines \ifciteidem
+\def\blx@opt@aux@idemtracker{%
+  \blx@reregimcs{\ifciteidem}}
 
 \DeclareBiblatexOption{global,type,entry}[string]{idemtracker}[true]{%
   \ifcsdef{blx@opt@idemtracker@#1}
@@ -14637,26 +14675,36 @@
   \let\blx@imc@ifciteidem\blx@ifciteidem@global
   \let\blx@idemtracker\blx@idemtracker@global
   \let\blx@idemreset\blx@idemreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@idemtracker}
 \def\blx@opt@idemtracker@false{%
   \let\blx@imc@ifciteidem\@secondoftwo
   \let\blx@idemtracker\relax
-  \let\blx@idemreset\relax}
+  \let\blx@idemreset\relax
+  \blx@opt@aux@idemtracker}
 \def\blx@opt@idemtracker@context{%
   \let\blx@imc@ifciteidem\blx@ifciteidem@context
   \let\blx@idemtracker\blx@idemtracker@context
   \let\blx@idemreset\blx@idemreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@idemtracker}
 \def\blx@opt@idemtracker@strict{%
   \let\blx@imc@ifciteidem\blx@ifciteidem@strict
   \let\blx@idemtracker\blx@idemtracker@strict
   \let\blx@idemreset\blx@idemreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@idemtracker}
 \def\blx@opt@idemtracker@constrict{%
   \let\blx@imc@ifciteidem\blx@ifciteidem@constrict
   \let\blx@idemtracker\blx@idemtracker@constrict
   \let\blx@idemreset\blx@idemreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@idemtracker}
+
+
+% opcittracker redefines \ifopcit
+\def\blx@opt@aux@opcittracker{%
+  \blx@reregimcs{\ifopcit}}
 
 \DeclareBiblatexOption{global,type,entry}[string]{opcittracker}[true]{%
   \ifcsdef{blx@opt@opcittracker@#1}
@@ -14666,26 +14714,36 @@
   \let\blx@imc@ifopcit\blx@ifopcit@global
   \let\blx@opcittracker\blx@opcittracker@global
   \let\blx@opcitreset\blx@opcitreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@opcittracker}
 \def\blx@opt@opcittracker@false{%
   \let\blx@imc@ifopcit\@secondoftwo
   \let\blx@opcittracker\relax
-  \let\blx@opcitreset\relax}
+  \let\blx@opcitreset\relax
+  \blx@opt@aux@opcittracker}
 \def\blx@opt@opcittracker@context{%
   \let\blx@imc@ifopcit\blx@ifopcit@context
   \let\blx@opcittracker\blx@opcittracker@context
   \let\blx@opcitreset\blx@opcitreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@opcittracker}
 \def\blx@opt@opcittracker@strict{%
   \let\blx@imc@ifopcit\blx@ifopcit@strict
   \let\blx@opcittracker\blx@opcittracker@strict
   \let\blx@opcitreset\blx@opcitreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@opcittracker}
 \def\blx@opt@opcittracker@constrict{%
   \let\blx@imc@ifopcit\blx@ifopcit@constrict
   \let\blx@opcittracker\blx@opcittracker@constrict
   \let\blx@opcitreset\blx@opcitreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@opcittracker}
+
+
+% loccittracker redefines \ifloccit
+\def\blx@opt@aux@loccittracker{%
+  \blx@reregimcs{\ifloccit}}
 
 \DeclareBiblatexOption{global,type,entry}[string]{loccittracker}[true]{%
   \ifcsdef{blx@opt@loccittracker@#1}
@@ -14695,26 +14753,32 @@
   \let\blx@imc@ifloccit\blx@ifloccit@global
   \let\blx@loccittracker\blx@loccittracker@global
   \let\blx@loccitreset\blx@loccitreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@loccittracker}
 \def\blx@opt@loccittracker@false{%
   \let\blx@imc@ifloccit\@secondoftwo
   \let\blx@loccittracker\relax
-  \let\blx@loccitreset\relax}
+  \let\blx@loccitreset\relax
+  \blx@opt@aux@loccittracker}
 \def\blx@opt@loccittracker@context{%
   \let\blx@imc@ifloccit\blx@ifloccit@context
   \let\blx@loccittracker\blx@loccittracker@context
   \let\blx@loccitreset\blx@loccitreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@loccittracker}
 \def\blx@opt@loccittracker@strict{%
   \let\blx@imc@ifloccit\blx@ifloccit@strict
   \let\blx@loccittracker\blx@loccittracker@strict
   \let\blx@loccitreset\blx@loccitreset@global
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@loccittracker}
 \def\blx@opt@loccittracker@constrict{%
   \let\blx@imc@ifloccit\blx@ifloccit@constrict
   \let\blx@loccittracker\blx@loccittracker@constrict
   \let\blx@loccitreset\blx@loccitreset@context
-  \booltrue{citetracker}}
+  \booltrue{citetracker}%
+  \blx@opt@aux@loccittracker}
+
 
 \DeclareBibliographyOption[boolean]{parentracker}[true]{%
   \ifstrequal{#1}{true}
@@ -14732,13 +14796,47 @@
     {\blx@err@invopt{maxparens=#1}{}}
     {\setcounter{maxparens}{#1}}}
 
-\newtoggle{blx@labeldateusetime}
-\DeclareBibliographyOption[boolean]{labeldateusetime}[true]{%
-  \ifstrequal{#1}{true}
-    {\toggletrue{blx@labeldateusetime}}
-    {\togglefalse{blx@labeldateusetime}}}
+% date handling
 
-\DeclareBibliographyOption[string]{labeldate}{%
+% define \blx@imc@print<datetype>date and
+% \blx@imc@print<datetype>dateextra
+% i.e. \print<datetype>date and \print<datetype>dateextra
+% (e.g. \printdate and \printedateextra,
+%       \printurldate and \printurldateextre).
+\def\blx@defdateformat#1#2{%
+  \appto\blx@blxreinit{%
+    \csletcs{print#1date}{blx@imc@print#1date}%
+    \csletcs{print#1dateextra}{blx@imc@print#1dateextra}}%
+  \ifstrequal{#2}{iso8601}
+    {\blx@warning@noline{'iso8601' date format specifier is deprecated.\MessageBreak
+       Use 'iso' instead}%
+     \csdef{blx@dateformat@#1date}{iso}}
+    {\ifstrequal{#2}{edtf}
+       {\blx@warning@noline{'edtf' date format specifier is deprecated.\MessageBreak
+          Use 'iso' instead}%
+        \csdef{blx@dateformat@#1date}{iso}}
+       {\csdef{blx@dateformat@#1date}{#2}}}%
+  \ifstrequal{#2}{ymd}
+    {\renewrobustcmd*{\bibdaterangesep}{\slash}%
+     \renewrobustcmd*{\bibtimerangesep}{\slash}%
+     \renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
+    {}%
+  \ifcsdef{mkdaterange#2}
+    {\protected\csedef{blx@imc@print#1date}{\noexpand\csuse{mkdaterange#2}{#1}}%
+     \protected\csedef{blx@imc@print#1dateextra}{\noexpand\csuse{mkdaterange#2extra}{#1}}}
+    {\ifcsdef{mkbibrange#2}%LEGACY(<3.5)
+      {\blx@warning@noline{%
+         '\string\mkbibrange#2(extra)' date range macro in style is deprecated,\MessageBreak
+         please define '\string\mkdaterange#2(extra)' instead}%
+       \protected\csedef{blx@imc@print#1date}{\noexpand\csuse{mkbibrange#2}{#1}}%
+       \protected\csedef{blx@imc@print#1dateextra}{\noexpand\csuse{mkbibrange#2extra}{#1}}}
+      {\blx@err@invopt{#1date=#2}{}}}}
+
+
+% labeldate is special because it needs to handle the legacy option
+% for labeldateparts
+% \printlabeldate, \printlabeldateextra
+\DeclareBiblatexOption{global,type,entry}[string]{labeldate}{%
    % 'true' or 'false' means that the user thinks that this is the old 'labeldate'
    % option which is now 'labeldateparts' (which is a boolean).
    \ifboolexpr{%
@@ -14750,177 +14848,178 @@
        extradate field is renamed to 'labeldateparts', setting this instead. This option is
        now used to set the format of the labeldate}%
       \settoggle{blx@labeldateparts}{#1}}
-     {\ifstrequal{#1}{iso8601}
-       {\blx@warning@noline{%
-          'iso8601' date format specifier is deprecated.\MessageBreak
-          Use 'iso' instead}%
-        \def\blx@dateformat@labeldate{iso}%
-        \renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
-       {\ifstrequal{#1}{edtf}
-          {\blx@warning@noline{%
-             'edtf' date format specifier is deprecated.\MessageBreak
-             Use 'iso' instead}%
-           \def\blx@dateformat@labeldate{iso}%
-           \renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
-          {\def\blx@dateformat@labeldate{#1}}}%
-      \ifstrequal{#1}{ymd}
-         {\renewrobustcmd*{\bibdaterangesep}{\slash}%
-          \renewrobustcmd*{\bibtimerangesep}{\slash}%
-          \renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
-         {}%
-      \ifstrequal{#1}{iso}% bibdaterangesep hard-coded to slash, no extra space before prefices
-        {\renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
-        {}%
-      \ifcsdef{mkdaterange#1}
-       {\protected\def\blx@imc@printlabeldate{\csuse{mkdaterange#1}{label}}
-        \protected\def\blx@imc@printlabeldateextra{\csuse{mkdaterange#1extra}{label}}}
-       {\ifcsdef{mkbibrange#1}%LEGACY(<3.5)
-         {\protected\def\blx@imc@printlabeldate{\csuse{mkbibrange#1}{label}}
-          \protected\def\blx@imc@printlabeldateextra{\csuse{mkbibrange#1extra}{label}}}
-         {\blx@err@invopt{labeldate=#1}{}}}}}
+     {\blx@defdateformat{label}{#1}}}
 
-\DeclareBibliographyOption[string]{labeltime}{%
-  \ifcsdef{mktimerange#1}
-    {\def\blx@timeformat@labeltime{#1}%
-     \protected\def\blx@imc@printlabeltime{\csuse{mktimerange#1}{label}}}
-    {\blx@err@invopt{labeltime=#1}{}}}
+% define \blx@imc@print<datetype>time, i.e. \print<datetype>time
+% e.g. \printtime and \printurltime
+\def\blx@deftimeformat#1#2{%
+  \appto\blx@blxreinit{%
+    \csletcs{print#1time}{blx@imc@print#1time}}%
+  \csdef{blx@timeformat@#1time}{#2}%
+    \ifcsdef{mktimerange#2}
+      {\protected\csedef{blx@imc@print#1time}{\noexpand\csuse{mktimerange#2}{#1}}}
+      {\blx@err@invopt{#1time=#2}{}}}
+
+% \printlabeltime
+\DeclareBiblatexOption{global,type,entry}[string]{labeltime}{%
+  \blx@deftimeformat{label}{#1}}
+
+\def\blx@setdateusetime#1#2{\settoggle{blx@#1dateusetime}{#2}}
+
+\newtoggle{blx@labeldateusetime}
+\DeclareBiblatexOption{global,type,entry}[boolean]{labeldateusetime}[true]{%
+  \blx@setdateusetime{label}{#1}}
+
+
+% *date format options - auto-created for all datamodel date fields
+% *time format options - auto-created for all datamodel date fields
+% *dateusetime options - auto-created for all datamodel date fields
+% Date metadata toggles are defined in one of the \abx@dobooleans calls
+\def\do#1{%
+  \DeclareBiblatexOption{global,type,entry}[string]{#1date}{%
+    \blx@defdateformat{#1}{##1}}%
+  % Default for new date fields is "comp" but this is overridden below by
+  % biblatex defaults
+  \setkeys{blx@opt@pre}{#1date=comp}%
+  % Time format options
+  \DeclareBiblatexOption{global,type,entry}[string]{#1time}{%
+    \blx@deftimeformat{#1}{##1}}%
+  % Default for new time fields is "24h"
+  \setkeys{blx@opt@pre}{#1time=24h}%
+  % Boolean to determine if times are printed with dates
+  \newtoggle{blx@#1dateusetime}%
+  \DeclareBiblatexOption{global,type,entry}[boolean]{#1dateusetime}[true]{%
+    \blx@setdateusetime{#1}{##1}}}
+\abx@dodatetypes
+
+
+\DeclareBiblatexOption{global,type,entry}[string]{alldates}{%
+  \def\do##1{\blx@defdateformat{##1}{#1}}%
+  \abx@dodatetypes
+  \do{label}}
+
+\DeclareBiblatexOption{global,type,entry}[string]{alltimes}{%
+  \def\do##1{\blx@deftimeformat{##1}{#1}}%
+  \abx@dodatetypes
+  \do{label}}
+
+\DeclareBiblatexOption{global,type,entry}[string]{alldatesusetime}{%
+  \def\do##1{\blx@setdateusetime{##1}{#1}}%
+  \abx@dodatetypes
+  \do{label}}
+
+\def\blx@opt@dateera@astronomical{%
+  \let\blx@imc@dateeraprint\@gobble
+  \protected\def\blx@imc@dateeraprintpre##1{%
+    \iffieldnum{##1}
+      {\begingroup
+       \let\blx@tempa\@empty
+       \blx@ifstrendswith{##1}{endyear}
+         {\blx@stripfromendinto{##1}{endyear}\blx@datetype
+          \def\blx@tempa{end}}
+         {\blx@stripfromendinto{##1}{year}\blx@datetype}%
+       \csuse{if\blx@datetype\blx@tempa dateera}{bce}
+         {\ifnumless{0-\thefield{##1}}{0}
+           {\printtext{\csuse{bibdateera\blx@tempa prefix}}}
+           {}}
+         {}%
+       \endgroup}
+      {}}%
+  \blx@reregimcs{\dateeraprint \dateeraprintpre}}
+
+\def\blx@opt@dateera@non@astronomical{%
+  \blx@adjustyears
+  \protected\def\blx@imc@dateeraprint##1{%
+    \iffieldnum{##1}
+      {\begingroup
+       \let\blx@tempa\@empty
+       \blx@ifstrendswith{##1}{endyear}
+         {\blx@stripfromendinto{##1}{endyear}\blx@datetype
+          \def\blx@tempa{end}}
+         {\blx@stripfromendinto{##1}{year}\blx@datetype}%
+       \csuse{if\blx@datetype\blx@tempa dateera}{bce}
+         {\ifnum\numexpr0-\thefield{##1}\relax<\blx@dateeraauto
+            % \midsentence is to suppress automatic capitalisation
+            \printtext{\printdelim{dateeradelim}\midsentence\bibstring{\blx@dateera@bce}}\relax
+          \fi}
+         {\ifnumless{\thefield{##1}}\blx@dateeraauto
+           {\printtext{\printdelim{dateeradelim}\midsentence\bibstring{\blx@dateera@ce}}}
+           {}}%
+       \endgroup}
+      {}}%
+  \let\blx@imc@dateeraprintpre\@gobble
+  \blx@reregimcs{\dateeraprint \dateeraprintpre}}
+
+\def\blx@opt@dateera@secular{%
+  \blx@opt@dateera@non@astronomical
+  \def\blx@dateera@bce{beforecommonera}%
+  \def\blx@dateera@ce{commonera}}
+
+\def\blx@opt@dateera@christian{%
+  \blx@opt@dateera@non@astronomical
+  \def\blx@dateera@bce{beforechrist}%
+  \def\blx@dateera@ce{annodomini}}
 
 % Date meta-information
-\DeclareBibliographyOption[string]{dateera}{%
-  \ifboolexpr{%
-              test {\ifstrequal{#1}{astronomical}}
-              or
-              test {\ifstrequal{#1}{secular}}
-              or
-              test {\ifstrequal{#1}{christian}}}
-  {\def\blx@dateera{#1}%
-   \ifstrequal{#1}{secular}
-     {\def\blx@dateera@bce{beforecommonera}%
-      \def\blx@dateera@ce{commonera}}
-     {}%
-   \ifstrequal{#1}{christian}
-     {\def\blx@dateera@bce{beforechrist}%
-      \def\blx@dateera@ce{annodomini}}
-     {}}
-  {\blx@err@invopt{dateera=#1}{}}}
+% possible values are 'astronomical', 'secular', 'christian'
+\DeclareBiblatexOption{global,type,entry}[string]{dateera}{%
+  \ifcsundef{blx@opt@dateera@#1}
+    {\blx@err@invopt{dateera=#1}{}}
+    {\def\blx@dateera{#1}%
+     \csuse{blx@opt@dateera@#1}}}
 
 % Effectively turns off dateeraauto since it's only used on ce dates which
 % are never less than zero (as that would be a bce date)
 \numdef\blx@dateeraauto{0}
-\DeclareBibliographyOption[integer]{dateeraauto}{%
+\DeclareBiblatexOption{global,type,entry}[integer]{dateeraauto}{%
   \numdef\blx@dateeraauto{#1}}
 
 \newtoggle{blx@datecirca}
-\DeclareBibliographyOption[boolean]{datecirca}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{datecirca}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@datecirca}%
-     \protected\def\datecircaprint{%
+     \protected\def\blx@imc@datecircaprint{%
        \ifdatecirca{\bibstring{circa}\printdelim{datecircadelim}}{}}%
-     \protected\def\enddatecircaprint{%
+     \protected\def\blx@imc@enddatecircaprint{%
        \ifenddatecirca{\bibstring{circa}\printdelim{datecircadelim}}{}}%
-     \protected\def\datecircaprintedtf{%LEGACY(<3.9)
-       \blx@warning@noline{%
-         '\string\datecircaprintedtf' is deprecated.
-         Please use '\string\datecircaprintiso'}%
-       \datecircaprintiso}%
-     \protected\def\enddatecircaprintedtf{%LEGACY(<3.9)
-       \blx@warning@noline{%
-         '\string\enddatecircaprintedtf' is deprecated.
-         Please use '\string\enddatecircaprintiso'}%
-       \enddatecircaprintiso}%
-     \protected\def\datecircaprintiso{%
+     \protected\def\blx@imc@datecircaprintiso{%
        \ifdatecirca{\textasciitilde}{}}%
-     \protected\def\enddatecircaprintiso{%
+     \protected\def\blx@imc@enddatecircaprintiso{%
        \ifenddatecirca{\textasciitilde}{}}}
-    {\togglefalse{blx@datecirca}}}
+    {\togglefalse{blx@datecirca}%
+     \let\blx@imc@datecircaprint\@empty
+     \let\blx@imc@enddatecircaprint\@empty
+     \let\blx@imc@datecircaprintiso\@empty
+     \let\blx@imc@enddatecircaprintiso\@empty}%
+  \blx@reregimcs{\datecircaprint \enddatecircaprint
+                 \datecircaprintiso \enddatecircaprintiso}}
 
 \newtoggle{blx@dateuncertain}
-\DeclareBibliographyOption[boolean]{dateuncertain}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{dateuncertain}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@dateuncertain}%
-     \protected\def\dateuncertainprint{%
+     \protected\def\blx@imc@dateuncertainprint{%
        \ifdateuncertain{\bibdateuncertain}{}}%
-     \protected\def\enddateuncertainprint{%
+     \protected\def\blx@imc@enddateuncertainprint{%
        \ifenddateuncertain{\bibdateuncertain}{}}}
-    {\togglefalse{blx@dateuncertain}}}
+    {\togglefalse{blx@dateuncertain}%
+     \let\blx@imc@dateuncertainprint\@empty
+     \let\blx@imc@enddateuncertainprint\@empty}%
+  \blx@reregimcs{\dateuncertainprint \enddateuncertainprint}}
 
-% *time format options - auto-created for all datamodel date fields
-% *date format options - auto-created for all datamodel date fields
-% *dateusetime options - auto-created for all datamodel date fields
-% Date metadata toggles are defined in one of the \abx@dobooleans calls
-\def\do#1{%
-  \DeclareBibliographyOption[string]{#1date}{%
-    \ifstrequal{##1}{iso8601}
-      {\blx@warning@noline{'iso8601' date format specifier is deprecated.\MessageBreak
-         Use 'iso' instead}%
-       \csdef{blx@dateformat@#1date}{iso}}
-      {\ifstrequal{##1}{edtf}
-         {\blx@warning@noline{'edtf' date format specifier is deprecated.\MessageBreak
-            Use 'iso' instead}%
-          \csdef{blx@dateformat@#1date}{iso}}
-         {\csdef{blx@dateformat@#1date}{##1}}}%
-    \ifstrequal{##1}{ymd}
-      {\renewrobustcmd*{\bibdaterangesep}{\slash}%
-       \renewrobustcmd*{\bibtimerangesep}{\slash}%
-       \renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
-      {}%
-    \ifcsdef{mkdaterange##1}
-      {\protected\csedef{blx@imc@print#1date}{\noexpand\csuse{mkdaterange##1}{#1}}%
-       \protected\csedef{blx@imc@print#1dateextra}{\noexpand\csuse{mkdaterange##1extra}{#1}}}
-      {\ifcsdef{mkbibrange##1}%LEGACY(<3.5)
-        {\blx@warning@noline{%
-           '\string\mkbibrange##1(extra)' date range macro in style is deprecated,\MessageBreak
-           please define '\string\mkdaterange##1(extra)' instead}%
-         \protected\csedef{blx@imc@print#1date}{\noexpand\csuse{mkbibrange##1}{#1}}%
-         \protected\csedef{blx@imc@print#1dateextra}{\noexpand\csuse{mkbibrange##1extra}{#1}}}
-        {\blx@err@invopt{#1date=##1}{}}}}%
-    % Default for new date fields is "comp" but this is overridden below by
-    % biblatex defaults
-    \setkeys{blx@opt@pre}{#1date=comp}%
-    % Time format options
-    \DeclareBibliographyOption[string]{#1time}{%
-      \csdef{blx@timeformat@#1time}{##1}%
-      \ifcsdef{mktimerange##1}
-        {\protected\csedef{blx@imc@print#1time}{\csuse{mktimerange##1}{#1}}}
-        {\blx@err@invopt{#1time=##1}{}}}%
-    % Default for new time fields is "24h"
-    \setkeys{blx@opt@pre}{#1time=24h}%
-    % Boolean to determine if times are printed with dates
-    \newtoggle{blx@#1dateusetime}%
-    \DeclareBibliographyOption[boolean]{#1dateusetime}{%
-      \ifstrequal{##1}{true}
-        {\toggletrue{blx@#1dateusetime}}
-        {\togglefalse{blx@#1dateusetime}}}}
-\abx@dodatetypes
-
-\DeclareBibliographyOption[string]{alldatesusetime}{%
-  \def\do##1{\ExecuteBibliographyOptions{##1usetime=#1}}%
-  \abx@dodates
-  \do{labeldate}}
-
-\DeclareBibliographyOption[string]{alldates}{%
-  \def\do##1{\ExecuteBibliographyOptions{##1=#1}}%
-  \abx@dodates
-  \do{labeldate}}
-
-\DeclareBibliographyOption[string]{alltimes}{%
-  \def\do##1{%
-    \ExecuteBibliographyOptions{##1time=#1}}%
-  \abx@dodatetypes
-  \do{label}}
 
 \newtoggle{blx@julian}
-\def\blx@gregorianstart{1582-10-15}
-\DeclareBibliographyOption[boolean]{julian}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{julian}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@julian}}
     {\togglefalse{blx@julian}}}
 
-\DeclareBibliographyOption[string]{gregorianstart}{%
+\def\blx@gregorianstart{1582-10-15}
+\DeclareBiblatexOption{global,type,entry}[string]{gregorianstart}{%
   \def\blx@gregorianstart{#1}}
 
 \newtoggle{blx@datezeros}\toggletrue{blx@datezeros}
-\DeclareBibliographyOption[boolean]{datezeros}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{datezeros}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@datezeros}%
      \let\blx@imc@mkyearzeros\blx@imc@forcezerosy
@@ -14929,24 +15028,28 @@
     {\togglefalse{blx@datezeros}%
      \let\blx@imc@mkyearzeros\blx@imc@stripzeros
      \let\blx@imc@mkmonthzeros\blx@imc@stripzeros
-     \let\blx@imc@mkdayzeros\blx@imc@stripzeros}}
+     \let\blx@imc@mkdayzeros\blx@imc@stripzeros}%
+  \blx@reregimcs{\mkyearzeros \mkmonthzeros \mkdayzeros}}
+
+\let\blx@imc@mktimezeros\blx@imc@forcezerosmdt
 
 \newtoggle{blx@timezeros}\toggletrue{blx@timezeros}
-\DeclareBibliographyOption[boolean]{timezeros}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{timezeros}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@timezeros}%
      \let\blx@imc@mktimezeros\blx@imc@forcezerosmdt}
     {\togglefalse{blx@timezeros}%
-     \let\blx@imc@mktimezeros\blx@imc@stripzeros}}
+     \let\blx@imc@mktimezeros\blx@imc@stripzeros}%
+  \blx@reregimcs{\mktimezeros}}
 
 \newtoggle{blx@timezones}
-\DeclareBibliographyOption[boolean]{timezones}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{timezones}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@timezones}}
     {\togglefalse{blx@timezones}}}
 
 \newtoggle{blx@seconds}
-\DeclareBibliographyOption[boolean]{seconds}[true]{%
+\DeclareBiblatexOption{global,type,entry}[boolean]{seconds}[true]{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@seconds}}
     {\togglefalse{blx@seconds}}}
@@ -15190,19 +15293,33 @@
 
 % Set defaults
 \setkeys{blx@opt@ldt}{style=numeric}
+% sorted by 'topic'
+% ideally *all* options are initialised here
 \setkeys{blx@opt@pre}{%
+  defernumbers=false,
   sorting=nty,sortlocale=auto,sortcase,sortupper,sortcites=false,
   maxnames=3,minnames=1,maxalphanames=3,minalphanames=1,
-  maxitems=3,minitems=1,mincrossrefs=2,minxrefs=2,useauthor=true,useeditor=true,
-  usetranslator=false,indexing=false,abbreviate=true,dateabbrev=true,dateera=astronomical,
-  backref=false,backrefsetstyle=setonly,pagetracker=false,ibidtracker=false,
-  idemtracker=false,opcittracker=false,loccittracker=false,citetracker=false,
-  citecounter=false,block=none,language=autobib,clearlang=true,autolang=none,
+  maxitems=3,minitems=1,mincrossrefs=2,minxrefs=2,
+  useauthor=true,useeditor=true,usetranslator=false,
+  indexing=false,
+  backref=false,backrefsetstyle=setonly,
+  pagetracker=false,ibidtracker=false,idemtracker=false,
+  opcittracker=false,loccittracker=false,citetracker=false,
+  citecounter=false,
+  abbreviate=true,dateabbrev=true,block=none,
+  language=autobib,clearlang=true,autolang=none,
   date=comp,labeldate=year,origdate=comp,eventdate=comp,urldate=short,
-  autopunct=true,punctfont=false,defernumbers=false,timezeros=true,
-  refsection=none,refsegment=none,citereset=none,hyperref=auto,
-  parentracker,maxparens=3,bibencoding=auto,bibwarn,timezones=false,
-  seconds=false,julian=false,labeltime=24h,locallabelwidth=false}
+  dateera=astronomical,dateeraauto=0,
+  datecirca=false,dateuncertain=false,
+  labeldateusetime=false,labeltime=24h,
+  julian=false,gregorianstart=1582-10-15,
+  datezeros=true,timezeros=true,timezones=false,seconds=false,
+  autopunct=true,punctfont=false,
+  refsection=none,refsegment=none,citereset=none,
+  hyperref=auto,
+  parentracker,maxparens=3,
+  bibencoding=auto,bibwarn,
+  locallabelwidth=false}
 
 % Load Unicode enhancements (only for LuaTeX and XeTeX)
 \ifboolexpr{
