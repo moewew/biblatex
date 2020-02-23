@@ -7516,33 +7516,105 @@ This command prints \prm{text}, which may be printable text or arbitrary code ge
 
 This command is similar to \cmd{printtext} except that the second argument is a file name rather than literal text. The \prm{file} argument must be the name of a valid \latex file found in \tex's search path. \cmd{printfile} will use \cmd{input} to load this \prm{file}. If there is no such file, \cmd{printfile} does nothing. The optional \prm{format} argument specifies a field formatting directive to be applied to the \prm{file}. If a type"=specific \prm{format} has been declared, the type"=specific formatting directive takes precedence over the generic one. If the \prm{format} is omitted, the \prm{file} is printed as is. Note that this feature needs to be enabled explicitly by setting the package option \opt{loadfiles} from \secref{use:opt:pre:gen}. By default, \cmd{printfile} will not input any files.
 
-\csitem{printdate}
+\cmditem{printdate}[key=value, \dots]
 
 This command prints the date of the entry, as specified in the fields \bibfield{date} or \bibfield{month}\slash \bibfield{year}. The date format is controlled by the package option \opt{date} from \secref{use:opt:pre:gen}. Additional formatting (fonts etc.) may be applied by adjusting the field format \texttt{date} (\secref{aut:fmt:ich}). Note that this command interfaces with the punctuation tracker. There is no need to wrap it in a \cmd{printtext} command.
 
-\csitem{printdateextra}
+The optional \keyval argument can be used to override date- and time-related options (\secref{use:opt:pre:gen}) set globally or on a per-type or per-entry basis. Each option supports exactly the same values as the global option it overrides.
+
+\begin{valuelist}
+
+\item[dateformat]
+Overrides the date format set with the \opt{date} option.
+
+\item[timeformat]
+Overrides the time format set with the \opt{time} option.
+
+\item[usetime]
+Overrides the \opt{dateusetime} option.
+
+\item[era]
+Overrides the \opt{dateera} option.
+
+\item[eraauto]
+Overrides the \opt{dateeraauto} option.
+
+\item[circa]
+Overrides the \opt{datecirca} option.
+
+\item[uncertain]
+Overrides the \opt{dateuncertain} option.
+
+\item[julian]
+Overrides the \opt{julian} option.
+
+\item[gregorianstart]
+Overrides the \opt{gregorianstart} option.
+
+\item[datezeros]
+Overrides the \opt{datezeros} option.
+
+\item[timezeros]
+Overrides the \opt{timezeros} option.
+
+\item[timezones]
+Overrides the \opt{timezones} option.
+
+\item[seconds]
+Overrides the \opt{seconds} option.
+
+\end{valuelist}
+
+\cmditem{printdateextra}[key=value, \dots]
 
 Similar to \cmd{printdate} but incorporates the \bibfield{extradate} field in the date specification. This is useful for bibliography styles designed for author-year citations.
 
-\csitem{printlabeldate}
+\cmditem{printlabeldate}[key=value, \dots]
 
 Similar to \cmd{printdate} but prints the date field determined by \cmd{DeclareLabeldate}. The date format is controlled by the package option \opt{labeldate} from \secref{use:opt:pre:gen}. Additional formatting may be applied by adjusting the field format \texttt{labeldate} (\secref{aut:fmt:ich}).
 
-\csitem{printlabeldateextra}
+The optional \keyval argument supports the same options as \cmd{printdate} with the following alteration.
+\begin{valuelist}
+
+\item[dateformat]
+Overrides the date format set with the \opt{labeldate} option.
+
+\item[timeformat]
+Overrides the time format set with the \opt{labeltime} option.
+
+\item[usetime]
+Overrides the \opt{labeldateusetime} option.
+
+\end{valuelist}
+
+\cmditem{printlabeldateextra}[key=value, \dots]
 
 Similar to \cmd{printlabeldate} but incorporates the \bibfield{extradate} field in the date specification. This is useful for bibliography styles designed for author-year citations.
 
-\csitem{print$<$datetype$>$date}
+\cmditem{print$<$datetype$>$date}[key=value, \dots]
 
 As \cmd{printdate} but prints the \bibfield{$<$datetype$>$date} of the entry. The date format is controlled by the package option \opt{$<$datetype$>$date} from \secref{use:opt:pre:gen}. Additional formatting may be applied by adjusting the field format \texttt{$<$datetype$>$date} (\secref{aut:fmt:ich}). The $<$datetype$>$s in the default data model are <> (for the main \bibfield{date} field), <orig>, <event> and <url>.
 
-\csitem{printtime}
+The optional \keyval argument supports the same options as \cmd{printdate} with the following alteration.
+\begin{valuelist}
 
-This command prints the time range of the entry, as specified in the \bibfield{date} field (see \secref{bib:use:dat}). The time format is controlled by the package option \opt{time} from \secref{use:opt:pre:gen}. Additional formatting (fonts etc.) may be applied by adjusting the field format \texttt{time} (\secref{aut:fmt:ich}). Relevant to time formatting are the \opt{timezeros} option and the \cmd{bibtimesep} and \cmd{bibtimezonesep} macros (\secref{use:fmt:lng}). Note that this command interfaces with the punctuation tracker. There is no need to wrap it in a \cmd{printtext} command. Note that this command prints a stand-alone time range apart from the date elements. With the \opt{$<$datepart$>$dateusetime} option, you can have the printed along with a date when printing a date range instead of printing the time range completely separately, which is what this command allows for.
+\item[dateformat]
+Overrides the date format set with the \opt{$<$datetype$>$date} option.
 
-\csitem{print$<$datetype$>$time}
+\item[timeformat]
+Overrides the time format set with the \opt{$<$datetype$>$time} option.
 
-As \cmd{printtime} but prints the \bibfield{$<$datetype$>$time} of the entry. The time format is controlled by the package option \opt{$<$datetype$>$time} from \secref{use:opt:pre:gen}. Additional formatting may be applied by adjusting the field format \texttt{$<$datetype$>$time} (\secref{aut:fmt:ich}). The $<$datetype$>$s in the default data model are <> (for the main \bibfield{date} field), <orig>, <event> and <url>.
+\item[usetime]
+Overrides the \opt{$<$datetype$>$usetime} option.
+\end{valuelist}
+
+\cmditem{printtime}[key=value, \dots]
+
+This command prints the time range of the entry, as specified in the \bibfield{date} field (see \secref{bib:use:dat}). The time format is controlled by the package option \opt{time} from \secref{use:opt:pre:gen}. Additional formatting (fonts etc.) may be applied by adjusting the field format \texttt{time} (\secref{aut:fmt:ich}). Relevant to time formatting are the \opt{timezeros} option and the \cmd{bibtimesep} and \cmd{bibtimezonesep} macros (\secref{use:fmt:lng}). Note that this command interfaces with the punctuation tracker. There is no need to wrap it in a \cmd{printtext} command. Note that this command prints a stand-alone time range apart from the date elements. With the \opt{$<$datepart$>$dateusetime} option, you can have the printed along with a date when printing a date range instead of printing the time range completely separately, which is what this command allows for. The command supports the same \keyval options as \cmd{printdate}.
+
+\cmditem{print$<$datetype$>$time}[key=value, \dots]
+
+As \cmd{printtime} but prints the \bibfield{$<$datetype$>$time} of the entry. The time format is controlled by the package option \opt{$<$datetype$>$time} from \secref{use:opt:pre:gen}. Additional formatting may be applied by adjusting the field format \texttt{$<$datetype$>$time} (\secref{aut:fmt:ich}). The $<$datetype$>$s in the default data model are <> (for the main \bibfield{date} field), <orig>, <event> and <url>. The command supports the same \keyval options as \cmd{print$<$datetype$>$date}.
 
 \cmditem{indexfield}[format]{field}
 
@@ -14202,6 +14274,7 @@ This revision history is a list of changes relevant to users of this package. Ch
       \cmd{multicitesubentryrangedelim}, \cmd{superciterangedelim},
       \cmd{supercitesubentrydelim}, \cmd{supercitesubentryrangedelim}%
       \see{use:fmt:fmt}
+\item Added \keyval options to \cmd{printdate}, \cmd{printtime} and friends\see{aut:bib:dat}
 \end{release}
 \begin{release}{3.14}{2019-12-01}
 \item Added new mapping verbs for citation sources\see{aut:ctm:map}

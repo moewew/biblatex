@@ -5810,7 +5810,7 @@
     {\blx@timepre{#1}{#2}%
      \printtext{\bibdatetimesep}%
      \printtext[{#1time}]{%
-       \csuse{mkbibtime\csuse{blx@timeformat@#1time}}
+       \csuse{mkbibtime\csuse{blx@timeformat@#1date}}
          {#1#2hour}{#1#2minute}{#1#2second}{#1#2timezone}}}
     {}}
 
@@ -6988,13 +6988,16 @@
   \do{nocite}%
   \dolistloop\blx@datemetabooleans}
 
+
 % Date datatype fields
 % \blx@regimcs doesn't work in do-lists nicely so use internal macro it calls
 \def\do#1{%
-  \appto\blx@blxinit{\csletcs{print#1date}{blx@imc@print#1date}}%
-  \appto\blx@blxinit{\csletcs{print#1time}{blx@imc@print#1time}}%
-  \appto\blx@blxinit{\csletcs{print#1dateextra}{blx@imc@print#1dateextra}}}
+  \appto\blx@blxinit{\csdef{print#1date}{\blx@imc@printdate{}{#1}}}%
+  \appto\blx@blxinit{\csdef{print#1dateextra}{\blx@imc@printdate{extra}{#1}}}%
+  \appto\blx@blxinit{\csdef{print#1time}{\blx@imc@printtime{#1}}}%
+}
 \abx@dodatetypes
+\do{label}
 
 % Set up circa, julian and uncertain date internals
 \def\blx@makeifdatemeta@bools@i#1#2{%
@@ -7270,20 +7273,15 @@
 
 \protected\def\blx@savedatetype#1{%
   \csletcs{blx@dateformat@saved#1date}{blx@dateformat@#1date}%
-  \protected\csedef{blx@imc@printsaved#1date}{%
-    \noexpand\csuse{mkdaterange\csuse{blx@dateformat@saved#1date}}
-      {saved#1}}%
-  \protected\csedef{blx@imc@printsaved#1dateextra}{%
+  \csdef{printsaved#1date}{\blx@imc@printdate{}{saved#1}}%
+  \csdef{printsaved#1dateextra}{%
     \begingroup
       % extradate is hard-coded in date macros, so reset it temporarily
       \csletcs{abx@field@extradate}{abx@field@savedextradate}%
-      \noexpand\csuse{mkdaterange\csuse{blx@dateformat@saved#1date}extra}
-        {saved#1}%
+      \blx@imc@printdate{extra}{saved#1}%
     \endgroup}%
-  \csletcs{blx@timeformat@saved#1time}{blx@timeformat@#1time}%
-  \protected\csedef{blx@imc@printsaved#1time}{%
-    \noexpand\csuse{mktimerange\csuse{blx@timeformat@saved#1time}}
-      {saved#1}}%
+  \csletcs{blx@timeformat@saved#1date}{blx@timeformat@#1date}%
+  \csdef{printsaved#1time}{\blx@imc@printtime{saved#1}}%
   \csletcs{etb@tgl@blx@saved#1dateusetime}{etb@tgl@blx@#1dateusetime}%
   % the datemetabooleans are here again for labeldate
   \blx@savebool{#1datecirca}%
@@ -7298,10 +7296,7 @@
   \blx@makeifdatemeta@bools{saved#1}{julian}%
   \blx@makeifdatemeta@bools{saved#1}{uncertain}%
   \blx@makeifdatemeta@bools{saved#1}{unknown}%
-  \blx@makeifdatemeta@fields{saved#1}%
-  \csletcs{printsaved#1date}{blx@imc@printsaved#1date}%
-  \csletcs{printsaved#1time}{blx@imc@printsaved#1time}%
-  \csletcs{printsaved#1dateextra}{blx@imc@printsaved#1dateextra}}
+  \blx@makeifdatemeta@fields{saved#1}}
 
 \def\blx@saveannotations@makesaved#1@#2{#1@saved#2}
 \protected\def\blx@saveannotations#1{%
@@ -7741,10 +7736,9 @@
   \ifblank{#1}
     {\def\blx@tempa{default}}
     {\def\blx@tempa{#1}}%
-  \def\blx@tempb{#2}%
-  \ifcsundef{abx@field@\blx@tempb source}
-    {}%
-    {\letcs\blx@tempa{abx@field@\blx@tempb source}%
+  \ifcsundef{abx@field@#2source}
+    {\def\blx@tempb{#2}}%
+    {\letcs\blx@tempb{abx@field@#2source}%
      \edef\blx@tempb{\blx@tempb date}}%
   \ifinlistcs{#3}{abx@annotation@field@\blx@tempb @\blx@tempa}}
 
@@ -7753,10 +7747,9 @@
   \ifblank{#1}
     {\def\blx@tempa{default}}
     {\def\blx@tempa{#1}}%
-  \def\blx@tempb{#2}%
-  \ifcsundef{abx@field@\blx@tempb source}
-    {}%
-    {\letcs\blx@tempa{abx@field@\blx@tempb source}%
+  \ifcsundef{abx@field@#2source}
+    {\def\blx@tempb{#2}}%
+    {\letcs\blx@tempb{abx@field@#2source}%
      \edef\blx@tempb{\blx@tempb date}}%
   \ifboolexpr { test {\ifcsdef{abx@annotation@field@\blx@tempb @\blx@tempa}}
                 or
@@ -7767,10 +7760,9 @@
   \ifblank{#1}
     {\def\blx@tempa{default}}
     {\def\blx@tempa{#1}}%
-  \def\blx@tempb{#1}%
-  \ifcsundef{abx@field@\blx@tempb source}
-    {}%
-    {\letcs\blx@tempb{abx@field@\blx@tempb source}%
+  \ifcsundef{abx@field@#2source}
+    {\def\blx@tempb{#2}}%
+    {\letcs\blx@tempb{abx@field@#2source}%
      \edef\blx@tempb{\blx@tempb date}}%
   \ifcsdef{abx@annotation@literal@field@\blx@tempb @\blx@tempa}
     {\csuse{abx@annotation@literal@field@\blx@tempb @\blx@tempa}}
@@ -14371,9 +14363,9 @@
   \settoggle{blx@clearlang}{#1}}
 
 \DeclareBibliographyOption[string]{autolang}{%
-  \blx@autolang@i{#1}}
+  \blx@optprocess@autloang{#1}}
 
-\def\blx@autolang@i#1{%
+\def\blx@optprocess@autloang#1{%
   \ifcsdef{blx@opt@autolang@#1}
     {\csuse{blx@opt@autolang@#1}}
     {\blx@err@invopt{autolang=#1}{}}}
@@ -14402,8 +14394,8 @@
   \def\blx@hook@endlang{\blx@postpunct}}
 
 \DeclareBiblatexOption{global,type,entry}[string]{indexing}[true]{%
-  \blx@opt@index{#1}}
-\def\blx@opt@index#1{%
+  \blx@optprocess@index{#1}}
+\def\blx@optprocess@index#1{%
   \ifcsdef{blx@opt@index@#1}
     {\csuse{blx@opt@index@#1}}
     {\blx@err@invopt{indexing=#1}{}}}
@@ -14797,6 +14789,34 @@
     {\setcounter{maxparens}{#1}}}
 
 % date handling
+\def\blx@setdateoptions{%
+  \setkeys{blx@opt@datetime}}
+
+% {<extra?>}{<datetype>}[<date options>]
+\def\blx@imc@printdate#1#2{%
+  \@ifnextchar[%
+    {\blx@imc@printdate@i{#1}{#2}}
+    {\blx@imc@printdate@i{#1}{#2}[]}}
+
+\let\blx@imc@printdate@curr@datetype\@empty
+\def\blx@imc@printdate@i#1#2[#3]{%
+  \begingroup
+    \def\blx@imc@printdate@curr@datetype{#2}%
+    \ifstrempty{#3}
+      {}
+      {\blx@setdateoptions{#3}}%
+    \blx@blxreinit
+    \ifcsdef{mkdaterange\csuse{blx@dateformat@#2date}#1}
+      {\csuse{mkdaterange\csuse{blx@dateformat@#2date}#1}{#2}}
+      {\ifcsdef{mkbibrange\csuse{blx@dateformat@#2date}#1}%LEGACY(<3.5)
+        {\blx@warning@noline{%
+           '\string\mkbibrange##1(extra)' date range macro in style is deprecated,\MessageBreak
+           please define '\string\mkdaterange##1(extra)' instead}%
+         \csuse{mkbibrange\csuse{blx@dateformat@#2date}#1}{#2}}
+        {\abx@missing{\csuse{blx@dateformat@#2date}}}}%
+  \endgroup
+}
+
 
 % define \blx@imc@print<datetype>date and
 % \blx@imc@print<datetype>dateextra
@@ -14804,9 +14824,6 @@
 % (e.g. \printdate and \printedateextra,
 %       \printurldate and \printurldateextre).
 \def\blx@defdateformat#1#2{%
-  \appto\blx@blxreinit{%
-    \csletcs{print#1date}{blx@imc@print#1date}%
-    \csletcs{print#1dateextra}{blx@imc@print#1dateextra}}%
   \ifstrequal{#2}{iso8601}
     {\blx@warning@noline{'iso8601' date format specifier is deprecated.\MessageBreak
        Use 'iso' instead}%
@@ -14822,53 +14839,39 @@
      \renewrobustcmd*{\bibdateeraendprefix}{\bibdateeraprefix}}
     {}%
   \ifcsdef{mkdaterange#2}
-    {\protected\csedef{blx@imc@print#1date}{\noexpand\csuse{mkdaterange#2}{#1}}%
-     \protected\csedef{blx@imc@print#1dateextra}{\noexpand\csuse{mkdaterange#2extra}{#1}}}
+    {}
     {\ifcsdef{mkbibrange#2}%LEGACY(<3.5)
-      {\blx@warning@noline{%
-         '\string\mkbibrange#2(extra)' date range macro in style is deprecated,\MessageBreak
-         please define '\string\mkdaterange#2(extra)' instead}%
-       \protected\csedef{blx@imc@print#1date}{\noexpand\csuse{mkbibrange#2}{#1}}%
-       \protected\csedef{blx@imc@print#1dateextra}{\noexpand\csuse{mkbibrange#2extra}{#1}}}
+      {}
       {\blx@err@invopt{#1date=#2}{}}}}
 
 
-% labeldate is special because it needs to handle the legacy option
-% for labeldateparts
-% \printlabeldate, \printlabeldateextra
-\DeclareBiblatexOption{global,type,entry}[string]{labeldate}{%
-   % 'true' or 'false' means that the user thinks that this is the old 'labeldate'
-   % option which is now 'labeldateparts' (which is a boolean).
-   \ifboolexpr{%
-     test {\ifstrequal{#1}{true}}
-     or
-     test {\ifstrequal{#1}{false}}}
-     {\blx@warning@noline{%
-       'labeldate' option used to determine whether to provide label date fields and\MessageBreak
-       extradate field is renamed to 'labeldateparts', setting this instead. This option is
-       now used to set the format of the labeldate}%
-      \settoggle{blx@labeldateparts}{#1}}
-     {\blx@defdateformat{label}{#1}}}
+\def\blx@imc@printtime#1{%
+  \@ifnextchar[%
+    {\blx@imc@printtime@i{#1}}
+    {\blx@imc@printtime@i{#1}[]}}
+
+\def\blx@imc@printtime@i#1[#2]{%
+  \begingroup
+    \def\blx@imc@printdate@curr@datetype{#1}%
+    \ifstrempty{#2}
+      {}
+      {\blx@setdateoptions{#2}}%
+    \blx@blxreinit
+    \ifcsdef{mktimerange\csuse{blx@timeformat@#1date}}
+      {\csuse{mktimerange\csuse{blx@timeformat@#1date}}{#1}}
+      {\abx@missing{\csuse{blx@timeformat@#1date}}}%
+  \endgroup
+}
 
 % define \blx@imc@print<datetype>time, i.e. \print<datetype>time
 % e.g. \printtime and \printurltime
 \def\blx@deftimeformat#1#2{%
-  \appto\blx@blxreinit{%
-    \csletcs{print#1time}{blx@imc@print#1time}}%
-  \csdef{blx@timeformat@#1time}{#2}%
-    \ifcsdef{mktimerange#2}
-      {\protected\csedef{blx@imc@print#1time}{\noexpand\csuse{mktimerange#2}{#1}}}
-      {\blx@err@invopt{#1time=#2}{}}}
-
-% \printlabeltime
-\DeclareBiblatexOption{global,type,entry}[string]{labeltime}{%
-  \blx@deftimeformat{label}{#1}}
+  \csdef{blx@timeformat@#1date}{#2}%
+  \ifcsdef{mktimerange#2}
+    {}
+    {\blx@err@invopt{#1time=#2}{}}}
 
 \def\blx@setdateusetime#1#2{\settoggle{blx@#1dateusetime}{#2}}
-
-\newtoggle{blx@labeldateusetime}
-\DeclareBiblatexOption{global,type,entry}[boolean]{labeldateusetime}[true]{%
-  \blx@setdateusetime{label}{#1}}
 
 
 % *date format options - auto-created for all datamodel date fields
@@ -14892,6 +14895,43 @@
     \blx@setdateusetime{#1}{##1}}}
 \abx@dodatetypes
 
+\define@key{blx@opt@datetime}{dateformat}{%
+  \expandafter\blx@defdateformat
+  \expandafter{\blx@imc@printdate@curr@datetype}{#1}}
+
+\define@key{blx@opt@datetime}{timeformat}{%
+  \expandafter\blx@deftimeformat
+  \expandafter{\blx@imc@printdate@curr@datetype}{#1}}
+
+\define@key{blx@opt@datetime}{usetime}[true]{%
+  \expandafter\blx@setdateusetime
+  \expandafter{\blx@imc@printdate@curr@datetype}{#1}}
+
+
+% labeldate is special because it needs to handle the legacy option
+% for labeldateparts
+% \printlabeldate, \printlabeldateextra
+\DeclareBiblatexOption{global,type,entry}[string]{labeldate}{%
+   % 'true' or 'false' means that the user thinks that this is the old 'labeldate'
+   % option which is now 'labeldateparts' (which is a boolean).
+   \ifboolexpr{%
+     test {\ifstrequal{#1}{true}}
+     or
+     test {\ifstrequal{#1}{false}}}
+     {\blx@warning@noline{%
+       'labeldate' option used to determine whether to provide label date fields and\MessageBreak
+       extradate field is renamed to 'labeldateparts', setting this instead. This option is
+       now used to set the format of the labeldate}%
+      \settoggle{blx@labeldateparts}{#1}}
+     {\blx@defdateformat{label}{#1}}}
+
+% \printlabeltime
+\DeclareBiblatexOption{global,type,entry}[string]{labeltime}{%
+  \blx@deftimeformat{label}{#1}}
+
+\newtoggle{blx@labeldateusetime}
+\DeclareBiblatexOption{global,type,entry}[boolean]{labeldateusetime}[true]{%
+  \blx@setdateusetime{label}{#1}}
 
 \DeclareBiblatexOption{global,type,entry}[string]{alldates}{%
   \def\do##1{\blx@defdateformat{##1}{#1}}%
@@ -14907,6 +14947,7 @@
   \def\do##1{\blx@setdateusetime{##1}{#1}}%
   \abx@dodatetypes
   \do{label}}
+
 
 \def\blx@opt@dateera@astronomical{%
   \let\blx@imc@dateeraprint\@gobble
@@ -14960,22 +15001,32 @@
   \def\blx@dateera@bce{beforechrist}%
   \def\blx@dateera@ce{annodomini}}
 
-% Date meta-information
-% possible values are 'astronomical', 'secular', 'christian'
-\DeclareBiblatexOption{global,type,entry}[string]{dateera}{%
+\def\blx@optprocess@dateera#1{%
   \ifcsundef{blx@opt@dateera@#1}
     {\blx@err@invopt{dateera=#1}{}}
     {\def\blx@dateera{#1}%
      \csuse{blx@opt@dateera@#1}}}
 
+% Date meta-information
+% possible values are 'astronomical', 'secular', 'christian'
+\DeclareBiblatexOption{global,type,entry}[string]{dateera}{%
+  \blx@optprocess@dateera{#1}}
+\define@key{blx@opt@datetime}{era}{%
+  \blx@optprocess@dateera{#1}}
+
+
 % Effectively turns off dateeraauto since it's only used on ce dates which
 % are never less than zero (as that would be a bce date)
 \numdef\blx@dateeraauto{0}
+\def\blx@optprocess@dateeraauto{\numdef\blx@dateeraauto}
 \DeclareBiblatexOption{global,type,entry}[integer]{dateeraauto}{%
-  \numdef\blx@dateeraauto{#1}}
+  \blx@optprocess@dateeraauto{#1}}
+\define@key{blx@opt@datetime}{eraauto}{%
+  \blx@optprocess@dateeraauto{#1}}
+
 
 \newtoggle{blx@datecirca}
-\DeclareBiblatexOption{global,type,entry}[boolean]{datecirca}[true]{%
+\def\blx@optprocess@datecirca#1{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@datecirca}%
      \protected\def\blx@imc@datecircaprint{%
@@ -14993,9 +15044,14 @@
      \let\blx@imc@enddatecircaprintiso\@empty}%
   \blx@reregimcs{\datecircaprint \enddatecircaprint
                  \datecircaprintiso \enddatecircaprintiso}}
+\DeclareBiblatexOption{global,type,entry}[boolean]{datecirca}[true]{%
+  \blx@optprocess@datecirca{#1}}
+\define@key{blx@opt@datetime}{circa}[true]{%
+  \blx@optprocess@datecirca{#1}}
+
 
 \newtoggle{blx@dateuncertain}
-\DeclareBiblatexOption{global,type,entry}[boolean]{dateuncertain}[true]{%
+\def\blx@optprocess@dateuncertain#1{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@dateuncertain}%
      \protected\def\blx@imc@dateuncertainprint{%
@@ -15006,20 +15062,30 @@
      \let\blx@imc@dateuncertainprint\@empty
      \let\blx@imc@enddateuncertainprint\@empty}%
   \blx@reregimcs{\dateuncertainprint \enddateuncertainprint}}
+\DeclareBiblatexOption{global,type,entry}[boolean]{dateuncertain}[true]{%
+  \blx@optprocess@dateuncertain{#1}}
+\define@key{blx@opt@datetime}{uncertain}[true]{%
+  \blx@optprocess@dateuncertain{#1}}
 
 
 \newtoggle{blx@julian}
+\def\blx@optprocess@julian{\settoggle{blx@julian}}%
 \DeclareBiblatexOption{global,type,entry}[boolean]{julian}[true]{%
-  \ifstrequal{#1}{true}
-    {\toggletrue{blx@julian}}
-    {\togglefalse{blx@julian}}}
+  \blx@optprocess@julian{#1}}
+\define@key{blx@opt@datetime}{julian}[true]{%
+  \blx@optprocess@julian{#1}}
+
 
 \def\blx@gregorianstart{1582-10-15}
+\def\blx@optprocess@gregorianstart{\def\blx@gregorianstart}%
 \DeclareBiblatexOption{global,type,entry}[string]{gregorianstart}{%
-  \def\blx@gregorianstart{#1}}
+  \blx@optprocess@gregorianstart{#1}}
+\define@key{blx@opt@datetime}{gregorianstart}{%
+  \blx@optprocess@gregorianstart{#1}}
+
 
 \newtoggle{blx@datezeros}\toggletrue{blx@datezeros}
-\DeclareBiblatexOption{global,type,entry}[boolean]{datezeros}[true]{%
+\def\blx@optprocess@datezeros#1{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@datezeros}%
      \let\blx@imc@mkyearzeros\blx@imc@forcezerosy
@@ -15029,30 +15095,44 @@
      \let\blx@imc@mkyearzeros\blx@imc@stripzeros
      \let\blx@imc@mkmonthzeros\blx@imc@stripzeros
      \let\blx@imc@mkdayzeros\blx@imc@stripzeros}%
-  \blx@reregimcs{\mkyearzeros \mkmonthzeros \mkdayzeros}}
+  \blx@reregimcs{\mkyearzeros \mkmonthzeros \mkdayzeros}}%
+\DeclareBiblatexOption{global,type,entry}[boolean]{datezeros}[true]{%
+  \blx@optprocess@datezeros{#1}}
+\define@key{blx@opt@datetime}{datezeros}[true]{%
+  \blx@optprocess@datezeros{#1}}
+
 
 \let\blx@imc@mktimezeros\blx@imc@forcezerosmdt
 
 \newtoggle{blx@timezeros}\toggletrue{blx@timezeros}
-\DeclareBiblatexOption{global,type,entry}[boolean]{timezeros}[true]{%
+\def\blx@optprocess@timezero#1{%
   \ifstrequal{#1}{true}
     {\toggletrue{blx@timezeros}%
      \let\blx@imc@mktimezeros\blx@imc@forcezerosmdt}
     {\togglefalse{blx@timezeros}%
      \let\blx@imc@mktimezeros\blx@imc@stripzeros}%
   \blx@reregimcs{\mktimezeros}}
+\DeclareBiblatexOption{global,type,entry}[boolean]{timezeros}[true]{%
+  \blx@optprocess@timezero{#1}}
+\define@key{blx@opt@datetime}{timezeros}[true]{%
+  \blx@optprocess@timezeros{#1}}
 
 \newtoggle{blx@timezones}
+\def\blx@optprocess@timezones{\settoggle{blx@timezones}}%
 \DeclareBiblatexOption{global,type,entry}[boolean]{timezones}[true]{%
-  \ifstrequal{#1}{true}
-    {\toggletrue{blx@timezones}}
-    {\togglefalse{blx@timezones}}}
+  \blx@optprocess@timezones{#1}}
+\define@key{blx@opt@datetime}{timezones}[true]{%
+  \blx@optprocess@timezones{#1}}
+
 
 \newtoggle{blx@seconds}
+\def\blx@optprocess@seconds{\settoggle{blx@seconds}}%
 \DeclareBiblatexOption{global,type,entry}[boolean]{seconds}[true]{%
-  \ifstrequal{#1}{true}
-    {\toggletrue{blx@seconds}}
-    {\togglefalse{blx@seconds}}}
+  \blx@optprocess@seconds{#1}}
+\define@key{blx@opt@datetime}{seconds}[true]{%
+  \blx@optprocess@seconds{#1}}
+
+
 
 \DeclareBibliographyOption[string]{autocite}{%
   \ifcsundef{blx@acite@#1}
@@ -15407,7 +15487,7 @@
               '#1=iso' requires 'dateera=astronomical'.\MessageBreak
               Setting 'dateera=astronomical'}%
             \setkeys{blx@opt@pre}{dateera=astronomical}}%
-          \ifcsstring{blx@timeformat@\blx@datetype time}{24h}%
+          \ifcsstring{blx@timeformat@\blx@datetype date}{24h}%
            {}
            {\blx@warn@conflopt{%
               '#1=iso' requires '\blx@datetype time=24h'.\MessageBreak

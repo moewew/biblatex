@@ -46,6 +46,9 @@
   has been reworked to make it easier to customise the printed output.
   Documents that relied on patching internal bibmacros or hevaily
   redefined them may have to adapt.
+- `\print<datetype>date`, `\print<datetype>dateextra` and
+  `\print<datetype>time` now support an optional key-value argument
+  for finer control of date and time options.
 
 # RELEASE NOTES FOR VERSION 3.14
 - biber from version 2.14 has extended, granular XDATA functionality to
