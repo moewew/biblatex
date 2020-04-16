@@ -401,6 +401,12 @@
         \boolfalse{pagetracker}}
        {}
        {\blx@err@patch{floats}}}%
+  \iftoggle{blx@countfloats}
+    {}
+    {\apptocmd\@floatboxreset
+       {\boolfalse{citecounter}}
+       {}
+       {\blx@err@patch{floats}}}%
   \iftoggle{blx@backreffloats}
     {}
     {\apptocmd\@floatboxreset
@@ -825,6 +831,7 @@
 \booltrue{refcontextdefaults}%
 \newbool{sourcemap}
 \newbool{citetracker}
+\newbool{citecounter}
 \newbool{pagetracker}
 \newbool{backtracker}
 \newbool{citerequest}
@@ -11042,7 +11049,7 @@
 % cite counter
 \def\blx@citecounter@global{%
   \ifbool{@filesw}
-    {\ifbool{citetracker}
+    {\ifbool{citecounter}
        {\immediate\write\@mainaux{%
           \string\abx@aux@count
           {\the\c@refsection}{\abx@field@entrykey}}}
@@ -11051,7 +11058,7 @@
 
 \def\blx@citecounter@context{%
   \ifbool{@filesw}
-    {\ifbool{citetracker}
+    {\ifbool{citecounter}
        {\immediate\write\@mainaux{%
           \iftoggle{blx@footnote}
             {\string\abx@aux@fncount}
@@ -12057,6 +12064,7 @@
     {\let\blx@postcode\@empty}
     {\def\blx@postcode{\usebibmacro{postnote}}}%
   \boolfalse{citetracker}%
+  \boolfalse{citecounter}%
   \boolfalse{pagetracker}%
   \blx@citeloop{#3}%
   \endgroup}
@@ -12085,6 +12093,7 @@
     {\let\blx@postcode\@empty}
     {\def\blx@postcode{\usebibmacro{postnote}}}%
   \boolfalse{citetracker}%
+  \boolfalse{citecounter}%
   \boolfalse{pagetracker}%
   \blx@citeloop{#3}%
   \endgroup}
@@ -12114,6 +12123,7 @@
     {\let\blx@postcode\@empty}
     {\def\blx@postcode{\usebibmacro{postnote}}}%
   \boolfalse{citetracker}%
+  \boolfalse{citecounter}%
   \boolfalse{pagetracker}%
   \blx@citeloop{#3}%
   \endgroup}
@@ -14704,13 +14714,13 @@
   \let\blx@citecounter\blx@citecounter@global
   \let\abx@aux@count\blx@aux@count
   \let\abx@aux@fncount\blx@aux@fncount
-  \booltrue{citetracker}}
+  \booltrue{citecounter}}
 \def\blx@opt@citecounter@context{%
   \let\blx@setcitecounter\blx@setcitecounter@context
   \let\blx@citecounter\blx@citecounter@context
   \let\abx@aux@count\blx@aux@count
   \let\abx@aux@fncount\blx@aux@fncount
-  \booltrue{citetracker}}
+  \booltrue{citecounter}}
 \def\blx@opt@citecounter@false{%
   \let\blx@setcitecounter\relax
   \let\blx@citecounter\relax
@@ -14868,6 +14878,9 @@
 \DeclareBibliographyOption[boolean]{trackfloats}[true]{%
   \settoggle{blx@trackfloats}{#1}}
 
+\newtoggle{blx@countfloats}
+\DeclareBibliographyOption[boolean]{countfloats}[true]{%
+  \settoggle{blx@countfloats}{#1}}
 
 \DeclareBibliographyOption[boolean]{parentracker}[true]{%
   \ifstrequal{#1}{true}
@@ -15352,7 +15365,8 @@
   pagetracker=false,
   ibidtracker=false,idemtracker=false,opcittracker=false,loccittracker=false,
   citetracker=false,trackfloats=false,
-  citecounter=false,block=none,language=autobib,clearlang=true,autolang=none,
+  citecounter=false,countfloats=true,
+  block=none,language=autobib,clearlang=true,autolang=none,
   date=comp,labeldate=year,origdate=comp,eventdate=comp,urldate=short,
   autopunct=true,punctfont=false,defernumbers=false,timezeros=true,
   refsection=none,refsegment=none,citereset=none,hyperref=auto,

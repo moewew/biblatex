@@ -21,11 +21,19 @@
   `\printunit` is needed instead of `\setunit` to stop subsequent
   `\setunit`s from overriding `\intitlepunct` in case of missing
   fields.
-- Added options `backreffloats` and `trackfloats` to enable/disable
-  citation tracking and back references in floats.
+- Added options `backreffloats`, `trackfloats` and `countfloats`
+  to enable/disable back references, citation tracking and counting
+  in floats.
   Note that citation tracking in floats can lead to undesirable
   results in case the float objects floats too far from its "natural"
   position.
+- **CRITICAL CHANGE**
+  The `citecounter` feature is now controlled by its own boolean
+  and no longer by `citetracker`.
+  For users that means that they have a finer control over
+  citation tracking and counting.
+  Style authors may have to add `\citecounterfalse`
+  to places where they call `\citetrackerfalse`.
 - Added `\mautocite` and `\Mautocite`.
 - Added `\NumsCheckSetup` and `\PagesCheckSetup` for finer control
   of the `\ifnumerals` and `\ifpages` checks.

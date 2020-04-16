@@ -2131,6 +2131,7 @@
 
 \DeclareCiteCommand{\citeauthor}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\ifciteindex
@@ -2142,6 +2143,7 @@
 
 \DeclareCiteCommand*{\citeauthor}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\ifciteindex
@@ -2153,6 +2155,7 @@
 
 \DeclareCiteCommand{\citetitle}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\ifciteindex
@@ -2164,6 +2167,7 @@
 
 \DeclareCiteCommand*{\citetitle}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\ifciteindex
@@ -2175,6 +2179,7 @@
 
 \DeclareCiteCommand{\citeyear}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\printfield{year}}
@@ -2183,6 +2188,7 @@
 
 \DeclareCiteCommand*{\citeyear}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\printfield{year}\printfield{extradate}}
@@ -2191,6 +2197,7 @@
 
 \DeclareCiteCommand{\citedate}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\printdate}
@@ -2199,6 +2206,7 @@
 
 \DeclareCiteCommand*{\citedate}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\printdateextra}
@@ -2207,6 +2215,7 @@
 
 \DeclareCiteCommand{\citeurl}
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\printfield[citeurl]{url}}

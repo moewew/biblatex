@@ -31,6 +31,7 @@
 \DeclareCiteCommand*{\citeauthor}
   {\defcounter{maxnames}{999}%
    \boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\usebibmacro{citeindex}%
@@ -40,6 +41,7 @@
 
 \DeclareCiteCommand{\citeyearpar}[\mkbibparens]
   {\boolfalse{citetracker}%
+   \boolfalse{citecounter}%
    \boolfalse{pagetracker}%
    \usebibmacro{prenote}}
   {\printfield{year}}

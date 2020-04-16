@@ -2697,6 +2697,10 @@ This option controls the citation counter which is required by \cnt{citecounter}
 \item[context] Enable the citation counter in context"=sensitive mode. In this mode, citations in footnotes and in the body text are counted independently.
 \end{valuelist}
 
+\boolitem[false]{countfloats}
+
+Whether to enable citation counting in floats. See also \secref{aut:cav:flt}.
+
 \optitem[false]{citetracker}{\opt{true}, \opt{false}, \opt{context}, \opt{strict}, \opt{constrict}}
 
 This option controls the citation tracker which is required by the \cmd{ifciteseen} and \cmd{ifentryseen} tests from \secref{aut:aux:tst}. The possible choices are:
@@ -10872,6 +10876,11 @@ These commands activate or deactivate all citation trackers locally (this will a
 
 These commands activate or deactivate the \texttt{backref} tracker locally. They are intended for use in the definition of citation commands or anywhere in the document body. If a citation command is to be excluded from backtracking, use \cmd{backtrackerfalse} in the \prm{precode} argument of \cmd{DeclareCiteCommand}. Note that these commands have no effect if the \texttt{backref} option has been not been set globally.
 
+\boolitem{citecounter}
+\leavevmode\vspace{\numexpr2\baselineskip}% fix margin spilling into the text
+
+These commands activate or deactivate citation counting locally. They are intended for use in the definition of citation commands or anywhere in the document body. If a citation command is to be excluded from counting, use \cmd{citetrackerfalse} in the \prm{precode} argument of \cmd{DeclareCiteCommand}. See \secref{aut:cbx:cbx} for details. Note that these commands have no effect if tracking has been disabled globally.
+
 \end{ltxsyntax}
 
 \subsection[Punctuation]{Punctuation and Spacing}
@@ -14286,7 +14295,8 @@ This revision history is a list of changes relevant to users of this package. Ch
 \begin{changelog}
 \begin{release}{3.15}{20??-??-??}
 \item Clarified \cmd{ifuniqueprimaryauthor} semantics\see{aut:aux:tst}
-\item Added \opt{trackfloats} and \opt{backreffloats}\see{use:opt:pre:gen}
+\item Added \opt{trackfloats}, \opt{countfloats} and \opt{backreffloats}\see{use:opt:pre:gen}
+\item Added \cmd{citecountertrue} and \cmd{citecounterfalse}\see{aut:aux:msc}
 \item Added \cmd{mautocite} and \cmd{Mautocite}\see{use:cit:mct}
 \item Added \cmd{NumsCheckSetup} and \cmd{PagesCheckSetup}\see{aut:aux:msc}
 \item Added \cmd{AtEveryEntrykey}\see{aut:fmt:hok}
