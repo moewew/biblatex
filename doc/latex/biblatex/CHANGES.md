@@ -15,6 +15,17 @@
   There is `\ifiscomputable{<string>}` to check if a `<string>`
   is an ASCII number OR has a computable equivalent.
   There are analogous macros for fields instead of strings.
+- Added `\finalhyphendemerits=0` to `\bibsetup`, the previous definition
+  can be restored with
+  ```
+  \renewcommand*{\bibsetup}{%
+    \interlinepenalty=5000\relax
+    \widowpenalty=10000\relax
+    \clubpenalty=10000\relax
+    \raggedbottom
+    \frenchspacing
+    \biburlsetup}
+  ```
 
 # RELEASE NOTES FOR VERSION 3.16
 - Fixed an infinite loop caused by excessive aliasing of the `volcitepages`

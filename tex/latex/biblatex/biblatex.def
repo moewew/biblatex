@@ -215,6 +215,7 @@
   \interlinepenalty=5000\relax
   \widowpenalty=10000\relax
   \clubpenalty=10000\relax
+  \finalhyphendemerits=0\relax
   \raggedbottom
   \frenchspacing
   \biburlsetup}
