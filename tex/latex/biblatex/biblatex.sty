@@ -14338,19 +14338,26 @@
     {\appto\blx@tempf{ map\string_origentrytype="1"}}
     {}}
 \blx@kv@defkey{blx@sourcemap@step}{match}{% characters
-  \appto\blx@tempf{ map\string_match="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \eappto\blx@tempf{ map\string_match="\blx@temps"}}
 \blx@kv@defkey{blx@sourcemap@step}{matchi}{% characters
-  \appto\blx@tempf{ map\string_matchi="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \appto\blx@tempf{ map\string_matchi="\blx@temps"}}
 \blx@kv@defkey{blx@sourcemap@step}{matches}{% characters
-  \appto\blx@tempf{ map\string_matches="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \appto\blx@tempf{ map\string_matches="\blx@temps"}}
 \blx@kv@defkey{blx@sourcemap@step}{matchesi}{% characters
-  \appto\blx@tempf{ map\string_matchesi="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \appto\blx@tempf{ map\string_matchesi="\blx@temps"}}
 \blx@kv@defkey{blx@sourcemap@step}{notmatch}{% characters
-  \appto\blx@tempf{ map\string_notmatch="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \appto\blx@tempf{ map\string_notmatch="\blx@temps"}}
 \blx@kv@defkey{blx@sourcemap@step}{notmatchi}{% characters
-  \appto\blx@tempf{ map\string_notmatchi="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \appto\blx@tempf{ map\string_notmatchi="\blx@temps"}}
 \blx@kv@defkey{blx@sourcemap@step}{replace}{% characters
-  \eappto\blx@tempf{ map\string_replace="#1"}}
+  \blx@xmlsanitizeafter{\def\blx@temps}{#1}%
+  \eappto\blx@tempf{ map\string_replace="\blx@temps"}}
 
 % [<specname>]{<spec>}
 \newrobustcmd*{\DeclareLabelalphaNameTemplate}[2][]{%
